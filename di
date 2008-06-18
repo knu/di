@@ -1,4 +1,4 @@
-#!/usr/bin/env ruby-1.8.7
+#!/usr/bin/env ruby
 # -*- ruby -*-
 #
 # di.rb - a wrapper around diff(1)
@@ -73,10 +73,13 @@ def set_flag(flag, val)
   when true
     $diff_flags.reject! { |k,| k == flag }
     $diff_flags << flag
-  when /^--/
-    $diff_flags << "#{flag}=#{val}"
   else
-    $diff_flags << "#{flag}#{val}"
+    case flag
+    when /^--/
+      $diff_flags << "#{flag}=#{val}"
+    else
+      $diff_flags << "#{flag}#{val}"
+    end
   end
 end
 
@@ -188,9 +191,9 @@ usage: #{MYNAME} [flags] [files]
       $diff_format = :unified
     }
 
-    opts.on("--label=LABEL",
+    opts.on("-L LABEL", "--label=LABEL",
       "Use LABEL instead of file name.") { |val|
-      set_flag("--label", val)
+      set_flag("-L", val)
     }
 
     opts.on("-p", "--show-c-function",
