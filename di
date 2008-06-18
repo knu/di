@@ -55,6 +55,8 @@ def main(args)
   parse_args!(args)
 
   diff_main($diff_from_files, $diff_to_files, $diff_flags)
+
+  exit $status
 end
 
 def set_flag(flag, val)
@@ -443,6 +445,8 @@ p val
 end
 
 def diff_main(from_files, to_files, flags)
+  $status = 0
+
   from_files.each { |from_file|
     if File.directory?(from_file)
       to_files.each { |to_file|
@@ -480,6 +484,11 @@ end
 
 def diff_files(file1, file2, flags)
   system *(['diff'] + flags + [file1, file2].flatten)
+
+  status = $? >> 8
+  $status = status if $status < status
+
+  return status
 end
 
 def diff_dirs(dir1, dir2, flags)
@@ -526,6 +535,7 @@ def diff_dirs(dir1, dir2, flags)
       diff_files(file1, file2, flags)
     else
       printf "Only in %s: %s\n", dir1, file
+      $status = 1 if $status < 1
     end
   }
 
@@ -552,4 +562,3 @@ def diff_exclude?(file)
 end
 
 main(ARGV)
-exit($? >> 8)
