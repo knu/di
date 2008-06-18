@@ -547,6 +547,7 @@ def diff_dirs(dir1, dir2, flags)
       diff_files(file1, file2, flags)
     else
       printf "Only in %s: %s\n", dir2, file
+      $status = 1 if $status < 1
     end
   }
 end
