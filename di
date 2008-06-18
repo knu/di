@@ -104,12 +104,12 @@ usage: #{MYNAME} [flags] [files]
   opts = OptionParser.new(banner) { |opts|
     opts.on("--no-cvs-exclude",
       "Include CVS excluded files and directories.") { |val|
-      $diff_no_cvs_exclude = val
+      $diff_no_cvs_exclude = !val
     }
 
     opts.on("--no-ignore-cvs-lines",
       "Do not ignore CVS keyword lines.") { |val|
-      $diff_no_ignore_cvs_lines = val
+      $diff_no_ignore_cvs_lines = !val
     }
 
     opts.on("-R", "--relative",
@@ -122,14 +122,10 @@ usage: #{MYNAME} [flags] [files]
       set_flag("-i", val)
     }
 
-    opts.on("--ignore-file-name-case",
+    opts.on("--[no-]ignore-file-name-case",
       "Ignore case when comparing file names.") { |val|
+p val
       set_flag("--ignore-file-name-case", val)
-    }
-
-    opts.on("--no-ignore-file-name-case",
-      "Consider case when comparing file names.") { |val|
-      set_flag("--no-ignore-file-name-case", val)
     }
 
     opts.on("-E", "--ignore-tab-expansion",
@@ -169,26 +165,31 @@ usage: #{MYNAME} [flags] [files]
 
     opts.on("-c[NUM]", "--context[=NUM]",
       "Output NUM (default 3) lines of copied context.") { |val|
-      set_flag("-c", val)
-      $diff_format = :context
+      if val
+        $diff_format = ['-C', String === val ? val : '3']
+      end
     }
 
     opts.on("-C NUM",
       "Output NUM lines of copied context.") { |val|
       set_flag("-C", val)
-      $diff_format = :context
+      if val
+        $diff_format = ['-C', val]
+      end
     }
 
     opts.on("-u[NUM]", "--unified[=NUM]",
       "Output NUM (default 3) lines of unified context.") { |val|
-      set_flag("-u", val)
-      $diff_format = :unified
+      if val
+        $diff_format = ['-U', String === val ? val : '3']
+      end
     }
 
     opts.on("-U NUM",
       "Output NUM lines of unified context.") { |val|
-      set_flag("-U", val)
-      $diff_format = :unified
+      if val
+        $diff_format = ['-U', val]
+      end
     }
 
     opts.on("-L LABEL", "--label=LABEL",
@@ -213,25 +214,30 @@ usage: #{MYNAME} [flags] [files]
 
     opts.on("-e", "--ed",
       "Output an ed script.") { |val|
-      set_flag("-e", val)
-      $diff_format = :ed
+      if val
+        $diff_format = ['-e', val]
+      end
     }
 
     opts.on("--normal",
       "Output a normal diff.") { |val|
-      set_flag("--normal", val)
-      $diff_format = :normal
+      if val
+        $diff_format = ['--normal', val]
+      end
     }
 
     opts.on("-n", "--rcs",
       "Output an RCS format diff.") { |val|
-      set_flag("-n", val)
-      $diff_format = :rcs
+      if val
+        $diff_format = ['-n', val]
+      end
     }
 
     opts.on("-y", "--side-by-side",
       "Output in two columns.") { |val|
-      set_flag("-y", val)
+      if val
+        $diff_format = ['-y', val]
+      end
     }
 
     opts.on("-W NUM", "--width=NUM",
@@ -386,9 +392,8 @@ usage: #{MYNAME} [flags] [files]
     opts.parse('-p')
     opts.parse!(args)
 
-    unless $diff_format
-      opts.parse('-U3')
-    end
+    $diff_format ||= ['-U', '3']
+    set_flag(*$diff_format)
 
     unless $diff_no_ignore_cvs_lines
       opts.parse('--ignore-matching-lines=\$[A-Z][A-Za-z][A-Za-z]*: .*\$')
