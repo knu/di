@@ -47,9 +47,12 @@ CVS_EXCLUDE_GLOBS = %w(
   core .svn .git .bzr .hg
 )
 CVS_EXCLUDE_REGEXP = Regexp.new(
+  '\A(?:' +
   CVS_EXCLUDE_GLOBS.map { |g|
-    '\A' + Regexp.quote(g) + '\z'
-  }.join('|'))
+    g.gsub(/(\\.)|(\*)|(\?)|(\[(?:\\.|.)*?\])|([^*?]+)/) {
+      $1 ? $1 : $2 ? '.*' : $3 ? '.' : $4 ? $4.sub(/\A!/, '^') : Regexp.quote($5)
+    }
+  }.join('|') + ')\z')
 
 def main(args)
   parse_args!(args)
@@ -57,6 +60,12 @@ def main(args)
   diff_main($diff_from_files, $diff_to_files, $diff_flags)
 
   exit $status
+end
+
+def warn(*lines)
+  lines.each { |line|
+    STDERR.puts "#{MYNAME}: #{line}"
+  }
 end
 
 def set_flag(flag, val)
@@ -105,17 +114,17 @@ usage: #{MYNAME} [flags] [files]
 
   opts = OptionParser.new(banner) { |opts|
     opts.on("--no-cvs-exclude",
-      "Include CVS excluded files and directories.") { |val|
+      "* Include CVS excluded files and directories.") { |val|
       $diff_no_cvs_exclude = !val
     }
 
     opts.on("--no-ignore-cvs-lines",
-      "Do not ignore CVS keyword lines.") { |val|
+      "* Do not ignore CVS keyword lines.") { |val|
       $diff_no_ignore_cvs_lines = !val
     }
 
     opts.on("-R", "--relative",
-      "Use relative path names.") { |val|
+      "* Use relative path names.") { |val|
       $diff_relative = val
     }
 
@@ -126,7 +135,6 @@ usage: #{MYNAME} [flags] [files]
 
     opts.on("--[no-]ignore-file-name-case",
       "Ignore case when comparing file names.") { |val|
-p val
       set_flag("--ignore-file-name-case", val)
     }
 
@@ -385,6 +393,7 @@ p val
     opts.on("--help",
       "Output this help.") { |val|
       print opts
+      puts "", "Options without the [*] sign will be passed through to diff(1)."
       exit 0
     }
   }
@@ -401,10 +410,10 @@ p val
       opts.parse('--ignore-matching-lines=\$[A-Z][A-Za-z][A-Za-z]*: .*\$')
     end
   rescue OptionParser::ParseError => e
-    STDERR.puts "#{MYNAME}: #{e}", usage
+    warn e, "Try `#{MYNAME} --help' for more information."
     exit 64
   rescue => e
-    STDERR.puts "#{MYNAME}: #{e}"
+    warn e
     exit 1
   end
 
@@ -413,17 +422,17 @@ p val
       $diff_to_files ||= args.dup
 
       if $diff_to_files.empty?
-        raise "no files to compare the file with"
+        raise "missing operand"
       end
     elsif $diff_to_files
       $diff_from_files = args.dup
 
       if $diff_from_files.empty?
-        raise "no files given"
+        raise "missing operand"
       end
     else
-      if args.empty?
-        raise "no files given"
+      if args.size < 2
+        raise "missing operand"
       end
 
       if File.directory?(args[0])
@@ -439,7 +448,7 @@ p val
       raise "wrong number of files given"
     end
   rescue => e
-    STDERR.puts "#{MYNAME}: #{e}", usage
+    warn e, "Try `#{MYNAME} --help' for more information."
     exit 64
   end
 end
