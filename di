@@ -97,6 +97,7 @@ end
 def parse_args!(args)
   $diff_from_files = $diff_to_files = $diff_format =
     $diff_relative = $diff_no_cvs_exclude = $diff_no_ignore_cvs_lines = nil
+  $diff_exclude = []
   $diff_flags = []
 
   require 'optparse'
@@ -347,12 +348,16 @@ usage: #{MYNAME} [flags] [files]
 
     opts.on("-x PAT", "--exclude=PAT",
       "Exclude files that match PAT.") { |val|
-      set_flag("-x", val)
+      $diff_exclude << val
     }
 
     opts.on("-X FILE", "--exclude-from=FILE",
       "Exclude files that match any pattern in FILE.") { |val|
-      set_flag("-X", val)
+      if val == '-'
+        $diff_exclude.concat(STDIN.read.split(/\n/))
+      else
+        $diff_exclude.concat(File.read(val).split(/\n/))
+      end
     }
 
     opts.on("-S FILE", "--starting-file=FILE",
@@ -492,7 +497,11 @@ def diff_main(from_files, to_files, flags)
 end
 
 def diff_files(file1, file2, flags)
-  system *(['diff'] + flags + [file1, file2].flatten)
+  files = [file1, file2].flatten
+
+  return 0 if files.any? { |file| diff_exclude?(file) }
+
+  system *(['diff'] + flags + files)
 
   status = $? >> 8
   $status = status if $status < status
@@ -565,6 +574,10 @@ def diff_exclude?(file)
   basename = File.basename(file)
 
   return true if basename.match(/\A\.\.?\z/)
+
+  return true if $diff_exclude.any? { |pat|
+    File.fnmatch(pat, basename, File::FNM_DOTMATCH)
+  }
 
   return false if $diff_no_cvs_exclude
 
