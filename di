@@ -46,13 +46,6 @@ CVS_EXCLUDE_GLOBS = %w(
   *.exe *.Z *.elc *.ln
   core .svn .git .bzr .hg
 )
-CVS_EXCLUDE_REGEXP = Regexp.new(
-  '\A(?:' +
-  CVS_EXCLUDE_GLOBS.map { |g|
-    g.gsub(/(\\.)|(\*)|(\?)|(\[(?:\\.|.)*?\])|([^*?]+)/) {
-      $1 ? $1 : $2 ? '.*' : $3 ? '.' : $4 ? $4.sub(/\A!/, '^') : Regexp.quote($5)
-    }
-  }.join('|') + ')\z')
 
 def main(args)
   parse_args!(args)
@@ -575,13 +568,15 @@ def diff_exclude?(file)
 
   return true if basename.match(/\A\.\.?\z/)
 
-  return true if $diff_exclude.any? { |pat|
+  return true if $diff_no_cvs_exclude && $diff_exclude.any? { |pat|
     File.fnmatch(pat, basename, File::FNM_DOTMATCH)
   }
 
-  return false if $diff_no_cvs_exclude
+  return true if CVS_EXCLUDE_GLOBS.any? { |pat|
+    File.fnmatch(pat, basename, File::FNM_DOTMATCH)
+  }
 
-  return basename.match(CVS_EXCLUDE_REGEXP) ? true : false
+  return false
 end
 
 main(ARGV)
