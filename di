@@ -47,6 +47,10 @@ CVS_EXCLUDE_GLOBS = %w(
   core .svn .git .bzr .hg
 )
 
+FIGNORE_GLOBS = ENV.fetch('FIGNORE', '').split(':').map { |pat|
+  '*' + pat
+}
+
 def main(args)
   parse_args!(args)
 
@@ -89,7 +93,8 @@ end
 
 def parse_args!(args)
   $diff_from_files = $diff_to_files = $diff_format =
-    $diff_relative = $diff_no_cvs_exclude = $diff_no_ignore_cvs_lines = nil
+    $diff_relative = $diff_no_cvs_exclude = $diff_no_fignore_exclude =
+    $diff_no_ignore_cvs_lines = nil
   $diff_exclude = []
   $diff_include = []
   $diff_flags = []
@@ -116,6 +121,11 @@ usage: #{MYNAME} [flags] [files]
     opts.on("--no-ignore-cvs-lines",
       "* Do not ignore CVS keyword lines.") { |val|
       $diff_no_ignore_cvs_lines = !val
+    }
+
+    opts.on("--no-fignore-exclude",
+      "* Include FIGNORE files.") { |val|
+      $diff_no_fignore_exclude = !val
     }
 
     opts.on("-R", "--relative",
@@ -583,6 +593,10 @@ def diff_exclude?(file)
   }
 
   return true if !$diff_no_cvs_exclude && CVS_EXCLUDE_GLOBS.any? { |pat|
+    File.fnmatch(pat, basename, File::FNM_DOTMATCH)
+  }
+
+  return true if !$diff_no_fignore_exclude && FIGNORE_GLOBS.any? { |pat|
     File.fnmatch(pat, basename, File::FNM_DOTMATCH)
   }
 
