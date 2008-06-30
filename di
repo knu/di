@@ -91,6 +91,7 @@ def parse_args!(args)
   $diff_from_files = $diff_to_files = $diff_format =
     $diff_relative = $diff_no_cvs_exclude = $diff_no_ignore_cvs_lines = nil
   $diff_exclude = []
+  $diff_include = []
   $diff_flags = []
 
   require 'optparse'
@@ -353,6 +354,11 @@ usage: #{MYNAME} [flags] [files]
       end
     }
 
+    opts.on("--include=PAT",
+      "Do not exclude files that match PAT.") { |val|
+      $diff_include << val
+    }
+
     opts.on("-S FILE", "--starting-file=FILE",
       "Start with FILE when comparing directories.") { |val|
       set_flag("-S", val)
@@ -405,7 +411,7 @@ usage: #{MYNAME} [flags] [files]
     set_flag(*$diff_format)
 
     unless $diff_no_ignore_cvs_lines
-      opts.parse('--ignore-matching-lines=\$[A-Z][A-Za-z][A-Za-z]*: .*\$')
+      opts.parse('--ignore-matching-lines=\$[A-Z][A-Za-z][A-Za-z]*(: .*)?\$')
     end
   rescue OptionParser::ParseError => e
     warn e, "Try `#{MYNAME} --help' for more information."
@@ -565,6 +571,10 @@ end
 
 def diff_exclude?(file)
   basename = File.basename(file)
+
+  return false if $diff_include.any? { |pat|
+    File.fnmatch(pat, basename, File::FNM_DOTMATCH)
+  }
 
   return true if basename.match(/\A\.\.?\z/)
 
