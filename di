@@ -578,11 +578,11 @@ def diff_exclude?(file)
 
   return true if basename.match(/\A\.\.?\z/)
 
-  return true if $diff_no_cvs_exclude && $diff_exclude.any? { |pat|
+  return true if $diff_exclude.any? { |pat|
     File.fnmatch(pat, basename, File::FNM_DOTMATCH)
   }
 
-  return true if CVS_EXCLUDE_GLOBS.any? { |pat|
+  return true if !$diff_no_cvs_exclude && CVS_EXCLUDE_GLOBS.any? { |pat|
     File.fnmatch(pat, basename, File::FNM_DOTMATCH)
   }
 
