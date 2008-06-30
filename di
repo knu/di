@@ -411,7 +411,7 @@ usage: #{MYNAME} [flags] [files]
     set_flag(*$diff_format)
 
     unless $diff_no_ignore_cvs_lines
-      opts.parse('--ignore-matching-lines=\$[A-Z][A-Za-z][A-Za-z]*(: .*)?\$')
+      opts.parse('--ignore-matching-lines=\$[A-Z][A-Za-z0-9][A-Za-z0-9]*\(:.*\)\{0,1\}\$')
     end
   rescue OptionParser::ParseError => e
     warn e, "Try `#{MYNAME} --help' for more information."
