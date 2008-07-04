@@ -582,11 +582,11 @@ end
 def diff_exclude?(file)
   basename = File.basename(file)
 
+  return true if basename.match(/\A\.\.?\z/)
+
   return false if $diff_include.any? { |pat|
     File.fnmatch(pat, basename, File::FNM_DOTMATCH)
   }
-
-  return true if basename.match(/\A\.\.?\z/)
 
   return true if $diff_exclude.any? { |pat|
     File.fnmatch(pat, basename, File::FNM_DOTMATCH)
