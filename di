@@ -36,7 +36,8 @@ MYDATE = %w$Date$[1]
 MYNAME = File.basename($0)
 
 DIFF_CMD = ENV.fetch('DIFF', 'diff')
-DEVNULL = '/dev/null'
+EMPTYDIR  = nil
+EMPTYFILE = '/dev/null'
 
 CVS_EXCLUDE_GLOBS = %w(
   RCS SCCS CVS CVS.adm
@@ -533,16 +534,16 @@ def call_diff(*args)
 end
 
 def diff_dirs(dir1, dir2, flags)
-  if dir1
-    entries1 = Dir.entries(dir1).reject { |file| diff_exclude?(file) }
-  else
+  if dir1 == EMPTYDIR
     entries1 = []
+  else
+    entries1 = Dir.entries(dir1).reject { |file| diff_exclude?(file) }
   end
 
-  if dir2
-    entries2 = Dir.entries(dir2).reject { |file| diff_exclude?(file) }
-  else
+  if dir2 == EMPTYDIR
     entries2 = []
+  else
+    entries2 = Dir.entries(dir2).reject { |file| diff_exclude?(file) }
   end
 
   common = entries1 & entries2
@@ -574,7 +575,7 @@ def diff_dirs(dir1, dir2, flags)
 
   diff_files(files, dir2, flags)
 
-  missing_files1 = []
+  new_files1 = []
 
   missing2.each { |entry|
     file = File.join(dir1, entry)
@@ -582,9 +583,9 @@ def diff_dirs(dir1, dir2, flags)
 
     if flags.include?('-N')
       if dir_p
-        diff_dirs(file, nil, flags)
+        diff_dirs(file, EMPTYDIR, flags)
       else
-        missing_files1 << file
+        new_files1 << file
       end
     else
       printf "Only in %s: %s (%s)\n",
@@ -593,9 +594,9 @@ def diff_dirs(dir1, dir2, flags)
     end
   }
 
-  diff_files(DEVNULL, diff_emptyfile, flags)
+  diff_files(new_files1, EMPTYFILE, flags)
 
-  missing_files2 = []
+  new_files2 = []
 
   missing1.each { |file|
     file = File.join(dir2, file)
@@ -603,9 +604,9 @@ def diff_dirs(dir1, dir2, flags)
 
     if flags.include?('-N')
       if dir_p
-        diff_dirs(nil, file, flags)
+        diff_dirs(EMPTYDIR, file, flags)
       else
-        missing_files2 << file
+        new_files2 << file
       end
     else
       printf "Only in %s: %s (%s)\n",
@@ -614,7 +615,7 @@ def diff_dirs(dir1, dir2, flags)
     end
   }
 
-  diff_files(DEVNULL, missing_files2, flags)
+  diff_files(EMPTYFILE, new_files2, flags)
 end
 
 def diff_exclude?(basename)
