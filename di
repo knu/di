@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 # -*- ruby -*-
 #
-# di.rb - a wrapper around diff(1)
+# di.rb - a wrapper around GNU diff(1)
 #
 # Copyright (c) 2008 Akinori MUSHA
 #
@@ -34,6 +34,9 @@ MYVERSION = "0.1.0"
 MYREVISION = %w$Rev$[1]
 MYDATE = %w$Date$[1]
 MYNAME = File.basename($0)
+
+DIFF_CMD = ENV.fetch('DIFF', 'diff')
+DEVNULL = '/dev/null'
 
 CVS_EXCLUDE_GLOBS = %w(
   RCS SCCS CVS CVS.adm
@@ -506,11 +509,22 @@ def diff_main(from_files, to_files, flags)
 end
 
 def diff_files(file1, file2, flags)
-  files = [file1, file2].flatten
+  if file1.is_a?(Array)
+    file2.is_a?(Array) and raise "cannot compare two sets of multiple files"
+    file1.empty? and return 0
 
-  return 0 if files.any? { |file| diff_exclude?(file) }
+    call_diff(flags, '--to-file', file2, file1)
+  elsif file2.is_a?(Array)
+    file1.empty? and return 0
 
-  system *(['diff'] + flags + files)
+    call_diff(flags, '--from-file', file1, file2)
+  else
+    call_diff(flags, file1, file2)
+  end
+end
+
+def call_diff(*args)
+  system(DIFF_CMD, *args.flatten)
 
   status = $? >> 8
   $status = status if $status < status
@@ -519,22 +533,30 @@ def diff_files(file1, file2, flags)
 end
 
 def diff_dirs(dir1, dir2, flags)
-  require 'find'
+  if dir1
+    entries1 = Dir.entries(dir1).reject { |file| diff_exclude?(file) }
+  else
+    entries1 = []
+  end
 
-  files1 = Dir.entries(dir1).reject { |file| diff_exclude?(file) }
-  files2 = Dir.entries(dir2).reject { |file| diff_exclude?(file) }
+  if dir2
+    entries2 = Dir.entries(dir2).reject { |file| diff_exclude?(file) }
+  else
+    entries2 = []
+  end
 
-  missing1 = files2 - files1
-  missing2 = files1 - files2
+  common = entries1 & entries2
+  missing1 = entries2 - entries1
+  missing2 = entries1 - entries2
 
-  (files1 & files2).each { |file|
+  files = []
+
+  common.each { |file|
     file1 = File.join(dir1, file)
     file2 = File.join(dir2, file)
 
-    files = []
-
     if File.directory?(file1)
-      if File.directory?(file2) && !File.symlink?(file1) && !File.symlink?(file2)
+      if File.directory?(file2)
         diff_dirs(file1, file2, flags)
       else
         missing1 << file2
@@ -548,45 +570,59 @@ def diff_dirs(dir1, dir2, flags)
         files << file1
       end
     end
-
-    unless files.empty?
-      diff_files(files, dir2, flags)
-    end  
   }
 
-  missing2.each { |file|
-    file1 = File.join(dir1, file)
-    file2 = File.join(dir2, file)
+  diff_files(files, dir2, flags)
+
+  missing_files1 = []
+
+  missing2.each { |entry|
+    file = File.join(dir1, entry)
+    dir_p = File.directory?(file)
 
     if flags.include?('-N')
-      diff_files(file1, file2, flags)
+      if dir_p
+        diff_dirs(file, nil, flags)
+      else
+        missing_files1 << file
+      end
     else
-      printf "Only in %s: %s\n", dir1, file
+      printf "Only in %s: %s (%s)\n",
+        dir1, file, dir_p ? 'directory' : 'file'
       $status = 1 if $status < 1
     end
   }
+
+  diff_files(DEVNULL, diff_emptyfile, flags)
+
+  missing_files2 = []
 
   missing1.each { |file|
-    file1 = File.join(dir1, file)
-    file2 = File.join(dir2, file)
+    file = File.join(dir2, file)
+    dir_p = File.directory?(file)
 
     if flags.include?('-N')
-      diff_files(file1, file2, flags)
+      if dir_p
+        diff_dirs(nil, file, flags)
+      else
+        missing_files2 << file
+      end
     else
-      printf "Only in %s: %s\n", dir2, file
+      printf "Only in %s: %s (%s)\n",
+        dir1, file, dir_p ? 'directory' : 'file'
       $status = 1 if $status < 1
     end
   }
+
+  diff_files(DEVNULL, missing_files2, flags)
 end
 
-def diff_exclude?(file)
-  basename = File.basename(file)
-
-  return true if basename.match(/\A\.\.?\z/)
-
+def diff_exclude?(basename)
   return false if $diff_include.any? { |pat|
     File.fnmatch(pat, basename, File::FNM_DOTMATCH)
   }
+
+  return true if basename.match(/\A\.\.?\z/)
 
   return true if $diff_exclude.any? { |pat|
     File.fnmatch(pat, basename, File::FNM_DOTMATCH)
