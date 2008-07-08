@@ -92,36 +92,36 @@ usage: #{MYNAME} [flags] [files]
   EOF
 
   banner = <<-"EOF"
-#{MYNAME} - a wrapper around diff(1)
+#{MYNAME} - a wrapper around GNU diff(1)
   version #{MYVERSION} [revision #{MYREVISION}] (#{MYDATE})
 
 #{usage}
   EOF
 
   opts = OptionParser.new(banner) { |opts|
-    opts.on("--no-cvs-exclude",
-      "* Include CVS excluded files and directories.") { |val|
+    opts.on('--no-cvs-exclude',
+      '* Include CVS excluded files and directories.') { |val|
       $diff_no_cvs_exclude = !val
     }
 
-    opts.on("--no-ignore-cvs-lines",
-      "* Do not ignore CVS keyword lines.") { |val|
+    opts.on('--no-ignore-cvs-lines',
+      '* Do not ignore CVS keyword lines.') { |val|
       $diff_no_ignore_cvs_lines = !val
     }
 
-    opts.on("--no-fignore-exclude",
-      "* Include FIGNORE files.") { |val|
+    opts.on('--no-fignore-exclude',
+      '* Include FIGNORE files.') { |val|
       $diff_no_fignore_exclude = !val
     }
 
-    opts.on("-R", "--relative",
-      "* Use relative path names.") { |val|
+    opts.on('-R', '--relative',
+      '* Use relative path names.') { |val|
       $diff_relative = val
     }
 
-    opts.on("-i", "--ignore-case",
-      "Ignore case differences in file contents.") { |val|
-      set_flag("-i", val)
+    opts.on('-i', '--ignore-case',
+      'Ignore case differences in file contents.') { |val|
+      set_flag('-i', val)
     }
 
     # not supported (yet)
@@ -130,221 +130,221 @@ usage: #{MYNAME} [flags] [files]
     #  set_flag("--ignore-file-name-case", val)
     #}
 
-    opts.on("-E", "--ignore-tab-expansion",
-      "Ignore changes due to tab expansion.") { |val|
-      set_flag("-E", val)
+    opts.on('-E', '--ignore-tab-expansion',
+      'Ignore changes due to tab expansion.') { |val|
+      set_flag('-E', val)
     }
 
-    opts.on("-b", "--ignore-space-change",
-      "Ignore changes in the amount of white space.") { |val|
-      set_flag("-b", val)
+    opts.on('-b', '--ignore-space-change',
+      'Ignore changes in the amount of white space.') { |val|
+      set_flag('-b', val)
     }
 
-    opts.on("-w", "--ignore-all-space",
-      "Ignore all white space.") { |val|
-      set_flag("-w", val)
+    opts.on('-w', '--ignore-all-space',
+      'Ignore all white space.') { |val|
+      set_flag('-w', val)
     }
 
-    opts.on("-B", "--ignore-blank-lines",
-      "Ignore changes whose lines are all blank.") { |val|
-      set_flag("-B", val)
+    opts.on('-B', '--ignore-blank-lines',
+      'Ignore changes whose lines are all blank.') { |val|
+      set_flag('-B', val)
     }
 
-    opts.on("-I RE", "--ignore-matching-lines=RE",
-      "Ignore changes whose lines all match RE.") { |val|
-      set_flag("-I", val)
+    opts.on('-I RE', '--ignore-matching-lines=RE',
+      'Ignore changes whose lines all match RE.') { |val|
+      set_flag('-I', val)
     }
 
-    opts.on("--strip-trailing-cr",
-      "Strip trailing carriage return on input.") { |val|
-      set_flag("--strip-trailing-cr", val)
+    opts.on('--strip-trailing-cr',
+      'Strip trailing carriage return on input.') { |val|
+      set_flag('--strip-trailing-cr', val)
     }
 
-    opts.on("-a", "--text",
-      "Treat all files as text.") { |val|
-      set_flag("-a", val)
+    opts.on('-a', '--text',
+      'Treat all files as text.') { |val|
+      set_flag('-a', val)
     }
 
-    opts.on("-c[NUM]", "--context[=NUM]",
-      "Output NUM (default 3) lines of copied context.") { |val|
+    opts.on('-c[NUM]', '--context[=NUM]',
+      'Output NUM (default 3) lines of copied context.') { |val|
       if val
         $diff_format = ['-C', String === val ? val : '3']
       end
     }
 
-    opts.on("-C NUM",
-      "Output NUM lines of copied context.") { |val|
-      set_flag("-C", val)
+    opts.on('-C NUM',
+      'Output NUM lines of copied context.') { |val|
+      set_flag('-C', val)
       if val
         $diff_format = ['-C', val]
       end
     }
 
-    opts.on("-u[NUM]", "--unified[=NUM]",
-      "Output NUM (default 3) lines of unified context.") { |val|
+    opts.on('-u[NUM]', '--unified[=NUM]',
+      'Output NUM (default 3) lines of unified context.') { |val|
       if val
         $diff_format = ['-U', String === val ? val : '3']
       end
     }
 
-    opts.on("-U NUM",
-      "Output NUM lines of unified context.") { |val|
+    opts.on('-U NUM',
+      'Output NUM lines of unified context.') { |val|
       if val
         $diff_format = ['-U', val]
       end
     }
 
-    opts.on("-L LABEL", "--label=LABEL",
-      "Use LABEL instead of file name.") { |val|
-      set_flag("-L", val)
+    opts.on('-L LABEL', '--label=LABEL',
+      'Use LABEL instead of file name.') { |val|
+      set_flag('-L', val)
     }
 
-    opts.on("-p", "--show-c-function",
-      "Show which C function each change is in.") { |val|
-      set_flag("-p", val)
+    opts.on('-p', '--show-c-function',
+      'Show which C function each change is in.') { |val|
+      set_flag('-p', val)
     }
 
-    opts.on("-F RE", "--show-function-line=RE",
-      "Show the most recent line matching RE.") { |val|
-      set_flag("-F", val)
+    opts.on('-F RE', '--show-function-line=RE',
+      'Show the most recent line matching RE.') { |val|
+      set_flag('-F', val)
     }
 
-    opts.on("-q", "--brief",
-      "Output only whether files differ.") { |val|
-      set_flag("-q", val)
+    opts.on('-q', '--brief',
+      'Output only whether files differ.') { |val|
+      set_flag('-q', val)
     }
 
-    opts.on("-e", "--ed",
-      "Output an ed script.") { |val|
+    opts.on('-e', '--ed',
+      'Output an ed script.') { |val|
       if val
         $diff_format = ['-e', val]
       end
     }
 
-    opts.on("--normal",
-      "Output a normal diff.") { |val|
+    opts.on('--normal',
+      'Output a normal diff.') { |val|
       if val
         $diff_format = ['--normal', val]
       end
     }
 
-    opts.on("-n", "--rcs",
-      "Output an RCS format diff.") { |val|
+    opts.on('-n', '--rcs',
+      'Output an RCS format diff.') { |val|
       if val
         $diff_format = ['-n', val]
       end
     }
 
-    opts.on("-y", "--side-by-side",
-      "Output in two columns.") { |val|
+    opts.on('-y', '--side-by-side',
+      'Output in two columns.') { |val|
       if val
         $diff_format = ['-y', val]
       end
     }
 
-    opts.on("-W NUM", "--width=NUM",
-      "Output at most NUM (default 130) print columns.") { |val|
-      set_flag("-W", val)
+    opts.on('-W NUM', '--width=NUM',
+      'Output at most NUM (default 130) print columns.') { |val|
+      set_flag('-W', val)
     }
 
-    opts.on("--left-column",
-      "Output only the left column of common lines.") { |val|
-      set_flag("--left-column", val)
+    opts.on('--left-column',
+      'Output only the left column of common lines.') { |val|
+      set_flag('--left-column', val)
     }
 
-    opts.on("--suppress-common-lines",
-      "Do not output common lines.") { |val|
-      set_flag("--suppress-common-lines", val)
+    opts.on('--suppress-common-lines',
+      'Do not output common lines.') { |val|
+      set_flag('--suppress-common-lines', val)
     }
 
-    opts.on("-D NAME", "--ifdef=NAME",
-      "Output merged file to show `#ifdef NAME' diffs.") { |val|
-      set_flag("-D", val)
+    opts.on('-D NAME', '--ifdef=NAME',
+      'Output merged file to show `#ifdef NAME\' diffs.') { |val|
+      set_flag('-D', val)
     }
 
-    opts.on("--old-group-format=GFMT",
-      "Format old input groups with GFMT.") { |val|
-      set_flag("--old-group-format", val)
+    opts.on('--old-group-format=GFMT',
+      'Format old input groups with GFMT.') { |val|
+      set_flag('--old-group-format', val)
     }
 
-    opts.on("--new-group-format=GFMT",
-      "Format new input groups with GFMT.") { |val|
-      set_flag("--new-group-format", val)
+    opts.on('--new-group-format=GFMT',
+      'Format new input groups with GFMT.') { |val|
+      set_flag('--new-group-format', val)
     }
 
-    opts.on("--unchanged-group-format=GFMT",
-      "Format unchanged input groups with GFMT.") { |val|
-      set_flag("--unchanged-group-format", val)
+    opts.on('--unchanged-group-format=GFMT',
+      'Format unchanged input groups with GFMT.') { |val|
+      set_flag('--unchanged-group-format', val)
     }
 
-    opts.on("--line-format=LFMT",
-      "Format all input lines with LFMT.") { |val|
-      set_flag("--line-format", val)
+    opts.on('--line-format=LFMT',
+      'Format all input lines with LFMT.') { |val|
+      set_flag('--line-format', val)
     }
 
-    opts.on("--old-line-format=LFMT",
-      "Format old input lines with LFMT.") { |val|
-      set_flag("--old-line-format", val)
+    opts.on('--old-line-format=LFMT',
+      'Format old input lines with LFMT.') { |val|
+      set_flag('--old-line-format', val)
     }
 
-    opts.on("--new-line-format=LFMT",
-      "Format new input lines with LFMT.") { |val|
-      set_flag("--new-line-format", val)
+    opts.on('--new-line-format=LFMT',
+      'Format new input lines with LFMT.') { |val|
+      set_flag('--new-line-format', val)
     }
 
-    opts.on("--unchanged-line-format=LFMT",
-      "Format unchanged input lines with LFMT.") { |val|
-      set_flag("--unchanged-line-format", val)
+    opts.on('--unchanged-line-format=LFMT',
+      'Format unchanged input lines with LFMT.') { |val|
+      set_flag('--unchanged-line-format', val)
     }
 
-    opts.on("-l", "--paginate",
-      "Pass the output through `pr' to paginate it.") { |val|
-      set_flag("-l", val)
+    opts.on('-l', '--paginate',
+      'Pass the output through `pr\' to paginate it.') { |val|
+      set_flag('-l', val)
     }
 
-    opts.on("-t", "--expand-tabs",
-      "Expand tabs to spaces in output.") { |val|
-      set_flag("-t", val)
+    opts.on('-t', '--expand-tabs',
+      'Expand tabs to spaces in output.') { |val|
+      set_flag('-t', val)
     }
 
-    opts.on("-T", "--initial-tab",
-      "Make tabs line up by prepending a tab.") { |val|
-      set_flag("-T", "--initial-tab", val)
+    opts.on('-T', '--initial-tab',
+      'Make tabs line up by prepending a tab.') { |val|
+      set_flag('-T', '--initial-tab', val)
     }
 
-    opts.on("--tabsize=NUM",
-      "Tab stops are every NUM (default 8) print columns.") { |val|
-      set_flag("--tabsize", val)
+    opts.on('--tabsize=NUM',
+      'Tab stops are every NUM (default 8) print columns.') { |val|
+      set_flag('--tabsize', val)
     }
 
-    opts.on("-r", "--recursive",
-      "Recursively compare any subdirectories found.") { |val|
-      set_flag("-r", val)
+    opts.on('-r', '--recursive',
+      'Recursively compare any subdirectories found.') { |val|
+      set_flag('-r', val)
     }
 
-    opts.on("-N", "--new-file",
-      "Treat absent files as empty.") { |val|
-      set_flag("-N", val)
+    opts.on('-N', '--new-file',
+      'Treat absent files as empty.') { |val|
+      set_flag('-N', val)
       $diff_new_file = val
     }
 
-    opts.on("--unidirectional-new-file",
-      "Treat absent first files as empty.") { |val|
-      set_flag("--unidirectional-new-file", val)
+    opts.on('--unidirectional-new-file',
+      'Treat absent first files as empty.') { |val|
+      set_flag('--unidirectional-new-file', val)
     }
 
-    opts.on("-s", "--report-identical-files",
-      "Report when two files are the same.") { |val|
-      set_flag("-s", val)
+    opts.on('-s', '--report-identical-files',
+      'Report when two files are the same.') { |val|
+      set_flag('-s', val)
     }
 
-    opts.on("-x PAT", "--exclude=PAT",
-      "Exclude files that match PAT.") { |val|
+    opts.on('-x PAT', '--exclude=PAT',
+      'Exclude files that match PAT.') { |val|
       $diff_exclude << val
     }
 
-    opts.on("-X FILE", "--exclude-from=FILE",
-      "Exclude files that match any pattern in FILE.") { |val|
+    opts.on('-X FILE', '--exclude-from=FILE',
+      'Exclude files that match any pattern in FILE.') { |val|
       if val == '-'
         $diff_exclude.concat(STDIN.read.split(/\n/))
       else
@@ -352,50 +352,51 @@ usage: #{MYNAME} [flags] [files]
       end
     }
 
-    opts.on("--include=PAT",
-      "Do not exclude files that match PAT.") { |val|
+    opts.on('--include=PAT',
+      'Do not exclude files that match PAT.') { |val|
       $diff_include << val
     }
 
-    opts.on("-S FILE", "--starting-file=FILE",
-      "Start with FILE when comparing directories.") { |val|
-      set_flag("-S", val)
+    opts.on('-S FILE', '--starting-file=FILE',
+      'Start with FILE when comparing directories.') { |val|
+      set_flag('-S', val)
     }
 
-    opts.on("--from-file=FILE1",
-      "Compare FILE1 to all operands.  FILE1 can be a directory.") { |val|
+    opts.on('--from-file=FILE1',
+      'Compare FILE1 to all operands.  FILE1 can be a directory.') { |val|
       $diff_from_files = [val]
     }
 
-    opts.on("--to-file=FILE2",
-      "Compare all operands to FILE2.  FILE2 can be a directory.") { |val|
+    opts.on('--to-file=FILE2',
+      'Compare all operands to FILE2.  FILE2 can be a directory.') { |val|
       $diff_to_files = [val]
     }
 
-    opts.on("--horizon-lines=NUM",
-      "Keep NUM lines of the common prefix and suffix.") { |val|
-      set_flag("--horizon-lines", val)
+    opts.on('--horizon-lines=NUM',
+      'Keep NUM lines of the common prefix and suffix.') { |val|
+      set_flag('--horizon-lines', val)
     }
 
-    opts.on("-d", "--minimal",
-      "Try hard to find a smaller set of changes.") { |val|
-      set_flag("-d", val)
+    opts.on('-d', '--minimal',
+      'Try hard to find a smaller set of changes.') { |val|
+      set_flag('-d', val)
     }
 
-    opts.on("--speed-large-files",
-      "Assume large files and many scattered small changes.") { |val|
-      set_flag("--speed-large-files", val)
+    opts.on('--speed-large-files',
+      'Assume large files and many scattered small changes.') { |val|
+      set_flag('--speed-large-files', val)
     }
 
-    opts.on("-v", "--version",
-      "Output version info.") { |val|
-      set_flag("-v", val)
+    opts.on('-v', '--version',
+      'Output version info.') { |val|
+      set_flag('-v', val)
     }
 
-    opts.on("--help",
-      "Output this help.") { |val|
-      print opts
-      puts "", "Options without the [*] sign will be passed through to diff(1)."
+    opts.on('--help',
+      'Output this help.') { |val|
+      print opts,
+        "\n",
+        "Options without the [*] sign will be passed through to diff(1).\n"
       exit 0
     }
   }
