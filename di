@@ -56,6 +56,8 @@ FIGNORE_GLOBS = ENV.fetch('FIGNORE', '').split(':').map { |pat|
 }
 
 def main(args)
+  setup
+
   parse_args!(args)
 
   diff_main($diff_from_files, $diff_to_files, $diff_flags)
@@ -95,14 +97,19 @@ def set_flag(flag, val)
   end
 end
 
-def parse_args!(args)
-  $diff_from_files = $diff_to_files = $diff_format =
-    $diff_relative = $diff_no_cvs_exclude = $diff_no_fignore_exclude =
-    $diff_no_ignore_cvs_lines = nil
+def setup
+  $diff_from_files = $diff_to_files = nil
+  $diff_format = nil
+  $diff_relative = false
+  $diff_no_cvs_exclude = false
+  $diff_no_fignore_exclude = false
+  $diff_no_ignore_cvs_lines = false
   $diff_exclude = []
   $diff_include = []
   $diff_flags = []
+end
 
+def parse_args!(args)
   require 'optparse'
 
   usage = <<-"EOF"
