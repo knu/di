@@ -630,7 +630,7 @@ def diff_dirs(dir1, dir2, flags)
 end
 
 def diff_exclude?(basename)
-  return true if basename == '.' || basename = '..'
+  return true if basename == '.' || basename == '..'
 
   return false if $diff_include.any? { |pat|
     File.fnmatch(pat, basename, File::FNM_DOTMATCH)
