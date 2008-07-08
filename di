@@ -71,32 +71,6 @@ def warn(*lines)
   }
 end
 
-def set_flag(flag, val)
-  if flag.match(/^-[0-9]/)
-    if !$diff_flags.empty?
-      if $diff_flags[-1].sub!(/([0-9])$/, '\1' + val)
-        return
-      end
-    end
-    $diff_flags << flag
-  end
-
-  case val
-  when false
-    $diff_flags.reject! { |k,| k == flag }
-  when true
-    $diff_flags.reject! { |k,| k == flag }
-    $diff_flags << flag
-  else
-    case flag
-    when /^--/
-      $diff_flags << "#{flag}=#{val}"
-    else
-      $diff_flags << "#{flag}#{val}"
-    end
-  end
-end
-
 def setup
   $diff_from_files = $diff_to_files = nil
   $diff_format = nil
@@ -104,6 +78,7 @@ def setup
   $diff_no_cvs_exclude = false
   $diff_no_fignore_exclude = false
   $diff_no_ignore_cvs_lines = false
+  $diff_new_file = false
   $diff_exclude = []
   $diff_include = []
   $diff_flags = []
@@ -149,10 +124,11 @@ usage: #{MYNAME} [flags] [files]
       set_flag("-i", val)
     }
 
-    opts.on("--[no-]ignore-file-name-case",
-      "Ignore case when comparing file names.") { |val|
-      set_flag("--ignore-file-name-case", val)
-    }
+    # not supported (yet)
+    #opts.on("--[no-]ignore-file-name-case",
+    #  "Ignore case when comparing file names.") { |val|
+    #  set_flag("--ignore-file-name-case", val)
+    #}
 
     opts.on("-E", "--ignore-tab-expansion",
       "Ignore changes due to tab expansion.") { |val|
@@ -349,6 +325,7 @@ usage: #{MYNAME} [flags] [files]
     opts.on("-N", "--new-file",
       "Treat absent files as empty.") { |val|
       set_flag("-N", val)
+      $diff_new_file = val
     }
 
     opts.on("--unidirectional-new-file",
@@ -478,6 +455,32 @@ usage: #{MYNAME} [flags] [files]
   end
 end
 
+def set_flag(flag, val)
+  if flag.match(/^-[0-9]/)
+    if !$diff_flags.empty?
+      if $diff_flags[-1].sub!(/([0-9])$/, '\1' + val)
+        return
+      end
+    end
+    $diff_flags << flag
+  end
+
+  case val
+  when false
+    $diff_flags.reject! { |k,| k == flag }
+  when true
+    $diff_flags.reject! { |k,| k == flag }
+    $diff_flags << flag
+  else
+    case flag
+    when /^--/
+      $diff_flags << "#{flag}=#{val}"
+    else
+      $diff_flags << "#{flag}#{val}"
+    end
+  end
+end
+
 def diff_main(from_files, to_files, flags)
   $status = 0
 
@@ -588,7 +591,7 @@ def diff_dirs(dir1, dir2, flags)
     file = File.join(dir1, entry)
     dir_p = File.directory?(file)
 
-    if flags.include?('-N')
+    if $diff_new_file
       if dir_p
         diff_dirs(file, EMPTYDIR, flags)
       else
@@ -609,7 +612,7 @@ def diff_dirs(dir1, dir2, flags)
     file = File.join(dir2, file)
     dir_p = File.directory?(file)
 
-    if flags.include?('-N')
+    if $diff_new_file
       if dir_p
         diff_dirs(EMPTYDIR, file, flags)
       else
