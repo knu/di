@@ -87,15 +87,11 @@ end
 def parse_args!(args)
   require 'optparse'
 
-  usage = <<-"EOF"
-usage: #{MYNAME} [flags] [files]
-  EOF
-
   banner = <<-"EOF"
 #{MYNAME} - a wrapper around GNU diff(1)
   version #{MYVERSION} [revision #{MYREVISION}] (#{MYDATE})
 
-#{usage}
+usage: #{MYNAME} [flags] [files]
   EOF
 
   opts = OptionParser.new(banner) { |opts|
