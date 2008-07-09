@@ -99,27 +99,33 @@ usage: #{MYNAME} [flags] [files]
   EOF
 
   opts = OptionParser.new(banner) { |opts|
-    opts.on('--no-cvs-exclude',
+    hash = OptionParser::CompletingHash.new
+    hash['-'] = false
+
+    miniTrueClass = Class.new
+    opts.accept(miniTrueClass, hash) {|arg, val| val == nil or val}
+
+    opts.on('--[no-]cvs-exclude',
       '* Include CVS excluded files and directories.') { |val|
       $diff_no_cvs_exclude = !val
     }
 
-    opts.on('--no-ignore-cvs-lines',
+    opts.on('--[no-]ignore-cvs-lines',
       '* Do not ignore CVS keyword lines.') { |val|
       $diff_no_ignore_cvs_lines = !val
     }
 
-    opts.on('--no-fignore-exclude',
+    opts.on('--[no-]fignore-exclude',
       '* Include FIGNORE files.') { |val|
       $diff_no_fignore_exclude = !val
     }
 
-    opts.on('-R', '--relative',
+    opts.on('-R', '--relative[=-]', miniTrueClass,
       '* Use relative path names.') { |val|
       $diff_relative = val
     }
 
-    opts.on('-i', '--ignore-case',
+    opts.on('-i', '--ignore-case[=-]', miniTrueClass,
       'Ignore case differences in file contents.') { |val|
       set_flag('-i', val)
     }
@@ -130,22 +136,22 @@ usage: #{MYNAME} [flags] [files]
     #  set_flag("--ignore-file-name-case", val)
     #}
 
-    opts.on('-E', '--ignore-tab-expansion',
+    opts.on('-E', '--ignore-tab-expansion[=-]', miniTrueClass,
       'Ignore changes due to tab expansion.') { |val|
       set_flag('-E', val)
     }
 
-    opts.on('-b', '--ignore-space-change',
+    opts.on('-b', '--ignore-space-change[=-]', miniTrueClass,
       'Ignore changes in the amount of white space.') { |val|
       set_flag('-b', val)
     }
 
-    opts.on('-w', '--ignore-all-space',
+    opts.on('-w', '--ignore-all-space[=-]', miniTrueClass,
       'Ignore all white space.') { |val|
       set_flag('-w', val)
     }
 
-    opts.on('-B', '--ignore-blank-lines',
+    opts.on('-B', '--ignore-blank-lines[=-]', miniTrueClass,
       'Ignore changes whose lines are all blank.') { |val|
       set_flag('-B', val)
     }
@@ -155,43 +161,34 @@ usage: #{MYNAME} [flags] [files]
       set_flag('-I', val)
     }
 
-    opts.on('--strip-trailing-cr',
+    opts.on('--[no-]strip-trailing-cr',
       'Strip trailing carriage return on input.') { |val|
       set_flag('--strip-trailing-cr', val)
     }
 
-    opts.on('-a', '--text',
+    opts.on('-a', '--text[=-]', miniTrueClass,
       'Treat all files as text.') { |val|
       set_flag('-a', val)
     }
 
-    opts.on('-c[NUM]', '--context[=NUM]',
+    opts.on('-c[NUM]', '--context[=NUM]', Integer,
       'Output NUM (default 3) lines of copied context.') { |val|
-      if val
-        $diff_format = ['-C', String === val ? val : '3']
-      end
+      $diff_format = ['-C', val ? val.to_s : '3']
     }
 
-    opts.on('-C NUM',
+    opts.on('-C NUM', Integer,
       'Output NUM lines of copied context.') { |val|
-      set_flag('-C', val)
-      if val
-        $diff_format = ['-C', val]
-      end
+      $diff_format = ['-C', val.to_s]
     }
 
-    opts.on('-u[NUM]', '--unified[=NUM]',
+    opts.on('-u[NUM]', '--unified[=NUM]', Integer,
       'Output NUM (default 3) lines of unified context.') { |val|
-      if val
-        $diff_format = ['-U', String === val ? val : '3']
-      end
+      $diff_format = ['-U', val ? val.to_s : '3']
     }
 
-    opts.on('-U NUM',
+    opts.on('-U NUM', Integer,
       'Output NUM lines of unified context.') { |val|
-      if val
-        $diff_format = ['-U', val]
-      end
+      $diff_format = ['-U', val.to_s]
     }
 
     opts.on('-L LABEL', '--label=LABEL',
@@ -199,7 +196,7 @@ usage: #{MYNAME} [flags] [files]
       set_flag('-L', val)
     }
 
-    opts.on('-p', '--show-c-function',
+    opts.on('-p', '--show-c-function[=-]', miniTrueClass,
       'Show which C function each change is in.') { |val|
       set_flag('-p', val)
     }
@@ -209,50 +206,50 @@ usage: #{MYNAME} [flags] [files]
       set_flag('-F', val)
     }
 
-    opts.on('-q', '--brief',
+    opts.on('-q', '--brief[=-]', miniTrueClass,
       'Output only whether files differ.') { |val|
       set_flag('-q', val)
     }
 
-    opts.on('-e', '--ed',
+    opts.on('-e', '--ed[=-]', miniTrueClass,
       'Output an ed script.') { |val|
       if val
         $diff_format = ['-e', val]
       end
     }
 
-    opts.on('--normal',
+    opts.on('--normal[=-]', miniTrueClass,
       'Output a normal diff.') { |val|
       if val
         $diff_format = ['--normal', val]
       end
     }
 
-    opts.on('-n', '--rcs',
+    opts.on('-n', '--rcs[=-]', miniTrueClass,
       'Output an RCS format diff.') { |val|
       if val
         $diff_format = ['-n', val]
       end
     }
 
-    opts.on('-y', '--side-by-side',
+    opts.on('-y', '--side-by-side[=-]', miniTrueClass,
       'Output in two columns.') { |val|
       if val
         $diff_format = ['-y', val]
       end
     }
 
-    opts.on('-W NUM', '--width=NUM',
+    opts.on('-W NUM', '--width=NUM', Integer,
       'Output at most NUM (default 130) print columns.') { |val|
-      set_flag('-W', val)
+      set_flag('-W', val.to_s)
     }
 
-    opts.on('--left-column',
+    opts.on('--left-column[=-]', miniTrueClass,
       'Output only the left column of common lines.') { |val|
       set_flag('--left-column', val)
     }
 
-    opts.on('--suppress-common-lines',
+    opts.on('--suppress-common-lines[=-]', miniTrueClass,
       'Do not output common lines.') { |val|
       set_flag('--suppress-common-lines', val)
     }
@@ -297,43 +294,43 @@ usage: #{MYNAME} [flags] [files]
       set_flag('--unchanged-line-format', val)
     }
 
-    opts.on('-l', '--paginate',
+    opts.on('-l', '--paginate[=-]', miniTrueClass,
       'Pass the output through `pr\' to paginate it.') { |val|
       set_flag('-l', val)
     }
 
-    opts.on('-t', '--expand-tabs',
+    opts.on('-t', '--expand-tabs[=-]', miniTrueClass,
       'Expand tabs to spaces in output.') { |val|
       set_flag('-t', val)
     }
 
-    opts.on('-T', '--initial-tab',
+    opts.on('-T', '--initial-tab[=-]', miniTrueClass,
       'Make tabs line up by prepending a tab.') { |val|
       set_flag('-T', '--initial-tab', val)
     }
 
-    opts.on('--tabsize=NUM',
+    opts.on('--tabsize=NUM', Integer,
       'Tab stops are every NUM (default 8) print columns.') { |val|
-      set_flag('--tabsize', val)
+      set_flag('--tabsize', val.to_s)
     }
 
-    opts.on('-r', '--recursive',
+    opts.on('-r', '--recursive[=-]', miniTrueClass,
       'Recursively compare any subdirectories found.') { |val|
       set_flag('-r', val)
     }
 
-    opts.on('-N', '--new-file',
+    opts.on('-N', '--[no-]new-file[=-]', miniTrueClass,
       'Treat absent files as empty.') { |val|
       set_flag('-N', val)
       $diff_new_file = val
     }
 
-    opts.on('--unidirectional-new-file',
+    opts.on('--unidirectional-new-file[=-]', miniTrueClass,
       'Treat absent first files as empty.') { |val|
       set_flag('--unidirectional-new-file', val)
     }
 
-    opts.on('-s', '--report-identical-files',
+    opts.on('-s', '--report-identical-files[=-]', miniTrueClass,
       'Report when two files are the same.') { |val|
       set_flag('-s', val)
     }
@@ -372,17 +369,17 @@ usage: #{MYNAME} [flags] [files]
       $diff_to_files = [val]
     }
 
-    opts.on('--horizon-lines=NUM',
+    opts.on('--horizon-lines=NUM', Integer,
       'Keep NUM lines of the common prefix and suffix.') { |val|
-      set_flag('--horizon-lines', val)
+      set_flag('--horizon-lines', val.to_s)
     }
 
-    opts.on('-d', '--minimal',
+    opts.on('-d', '--minimal[=-]', miniTrueClass,
       'Try hard to find a smaller set of changes.') { |val|
       set_flag('-d', val)
     }
 
-    opts.on('--speed-large-files',
+    opts.on('--speed-large-files[=-]', miniTrueClass,
       'Assume large files and many scattered small changes.') { |val|
       set_flag('--speed-large-files', val)
     }
@@ -457,28 +454,14 @@ usage: #{MYNAME} [flags] [files]
 end
 
 def set_flag(flag, val)
-  if flag.match(/^-[0-9]/)
-    if !$diff_flags.empty?
-      if $diff_flags[-1].sub!(/([0-9])$/, '\1' + val)
-        return
-      end
-    end
-    $diff_flags << flag
-  end
-
   case val
   when false
     $diff_flags.reject! { |k,| k == flag }
   when true
     $diff_flags.reject! { |k,| k == flag }
-    $diff_flags << flag
+    $diff_flags << [flag]
   else
-    case flag
-    when /^--/
-      $diff_flags << "#{flag}=#{val}"
-    else
-      $diff_flags << "#{flag}#{val}"
-    end
+    $diff_flags << [flag, val]
   end
 end
 
