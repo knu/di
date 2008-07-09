@@ -99,10 +99,9 @@ usage: #{MYNAME} [flags] [files]
   EOF
 
   opts = OptionParser.new(banner) { |opts|
+    miniTrueClass = Class.new
     hash = OptionParser::CompletingHash.new
     hash['-'] = false
-
-    miniTrueClass = Class.new
     opts.accept(miniTrueClass, hash) {|arg, val| val == nil or val}
 
     opts.on('--[no-]cvs-exclude',
