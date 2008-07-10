@@ -396,6 +396,7 @@ usage: #{MYNAME} [flags] [files]
   begin
     opts.parse('-N')
     opts.parse('-p')
+    opts.parse('-d')
     opts.parse!(args)
 
     $diff_format ||= ['-U', '3']
