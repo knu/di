@@ -1,5 +1,5 @@
 #!/usr/bin/env ruby
-# -*- ruby -*-
+# -*- mode: ruby; coding: utf-8 -*-
 #
 # di.rb - a wrapper around GNU diff(1)
 #
@@ -483,21 +483,15 @@ def diff_dirs(dir1, dir2, flags)
   common.each { |file|
     file1 = File.join(dir1, file)
     file2 = File.join(dir2, file)
-
-    if File.directory?(file1)
-      if File.directory?(file2)
-        diff_dirs(file1, file2, flags) if $diff.recursive
-      else
-        missing1 << file2
-        missing2 << file1
-      end
+    file1_is_dir = File.directory?(file1)
+    file2_is_dir = File.directory?(file2)
+    if file1_is_dir && file2_is_dir
+      diff_dirs(file1, file2, flags) if $diff.recursive
+    elsif !file1_is_dir && !file2_is_dir
+      files << file1
     else
-      if File.directory?(file2)
-        missing1 << file2
-        missing2 << file1
-      else
-        files << file1
-      end
+      missing1 << file
+      missing2 << file
     end
   }
   diff_files(files, dir2, flags)
