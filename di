@@ -60,7 +60,7 @@ def main(args)
 
   parse_args!(args)
 
-  diff_main($diff.from_files, $diff.to_files, $diff.flags)
+  diff_main
 
   exit $status
 end
@@ -402,18 +402,18 @@ def set_flag(flag, val)
   end
 end
 
-def diff_main(from_files, to_files, flags)
+def diff_main
   $status = 0
 
-  from_files.each { |from_file|
+  $diff.from_files.each { |from_file|
     if File.directory?(from_file)
-      to_files.each { |to_file|
+      $diff.to_files.each { |to_file|
         if File.directory?(to_file)
           if $diff.relative
             to_file = File.expand_path(from_file, to_file)
           end
 
-          diff_dirs(from_file, to_file, flags)
+          diff_dirs(from_file, to_file)
         else
           if $diff.relative
             from_file = File.expand_path(to_file, from_file)
@@ -421,11 +421,11 @@ def diff_main(from_files, to_files, flags)
             from_file = File.expand_path(File.basename(to_file), from_file)
           end
 
-          diff_files(from_file, to_file, flags)
+          diff_files(from_file, to_file)
         end
       }
     else
-      to_files.each { |to_file|
+      $diff.to_files.each { |to_file|
         if File.directory?(to_file)
           if $diff.relative
             to_file = File.expand_path(from_file, to_file)
@@ -434,35 +434,35 @@ def diff_main(from_files, to_files, flags)
           end
         end
 
-        diff_files(from_file, to_file, flags)
+        diff_files(from_file, to_file)
       }
     end
   }
 end
 
-def diff_files(file1, file2, flags)
+def diff_files(file1, file2)
   if file1.is_a?(Array)
     file2.is_a?(Array) and raise "cannot compare two sets of multiple files"
     file1.empty? and return 0
 
-    call_diff(flags, '--to-file', file2, file1)
+    call_diff('--to-file', file2, file1)
   elsif file2.is_a?(Array)
     file1.empty? and return 0
 
-    call_diff(flags, '--from-file', file1, file2)
+    call_diff('--from-file', file1, file2)
   else
-    call_diff(flags, file1, file2)
+    call_diff(file1, file2)
   end
 end
 
 def call_diff(*args)
-  system(DIFF_CMD, *args.flatten)
+  system(*[DIFF_CMD, $diff.flags, args].flatten)
   status = $? >> 8
   $status = status if $status < status
   return status
 end
 
-def diff_dirs(dir1, dir2, flags)
+def diff_dirs(dir1, dir2)
   if dir1 == EMPTYDIR
     entries1 = []
   else
@@ -486,7 +486,7 @@ def diff_dirs(dir1, dir2, flags)
     file1_is_dir = File.directory?(file1)
     file2_is_dir = File.directory?(file2)
     if file1_is_dir && file2_is_dir
-      diff_dirs(file1, file2, flags) if $diff.recursive
+      diff_dirs(file1, file2) if $diff.recursive
     elsif !file1_is_dir && !file2_is_dir
       files << file1
     else
@@ -494,7 +494,7 @@ def diff_dirs(dir1, dir2, flags)
       missing2 << file
     end
   }
-  diff_files(files, dir2, flags)
+  diff_files(files, dir2)
 
   [[dir1, missing2], [dir2, missing1]].each { |dir, missing|
     new_files = []
@@ -503,7 +503,7 @@ def diff_dirs(dir1, dir2, flags)
 
       if $diff.new_file
         if File.directory?(file)
-          diff_dirs(file, EMPTYDIR, flags)
+          diff_dirs(file, EMPTYDIR)
         else
           new_files << file
         end
@@ -514,9 +514,9 @@ def diff_dirs(dir1, dir2, flags)
       end
     }
     if dir.equal?(dir1)
-      diff_files(new_files, EMPTYFILE, flags)
+      diff_files(new_files, EMPTYFILE)
     else
-      diff_files(EMPTYFILE, new_files, flags)
+      diff_files(EMPTYFILE, new_files)
     end
   }
 end
