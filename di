@@ -336,7 +336,8 @@ usage: #{MYNAME} [flags] [files]
   }
 
   begin
-    opts.parse('--cvs-exclude', '--fignore-exclude', '--ignore-cvs-lines', '-N', '-r', '-p', '-d')
+    opts.parse('--cvs-exclude', '--fignore-exclude', '--ignore-cvs-lines',
+               '-N', '-r', '-p', '-d')
     opts.parse!(args)
 
     $diff.format ||= ['-U', '3']
