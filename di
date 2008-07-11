@@ -104,237 +104,192 @@ usage: #{MYNAME} [flags] [files]
       '* Include CVS excluded files and directories.') { |val|
       $diff_no_cvs_exclude = !val
     }
-
     opts.on('--[no-]ignore-cvs-lines',
       '* Do not ignore CVS keyword lines.') { |val|
       $diff_no_ignore_cvs_lines = !val
     }
-
     opts.on('--[no-]fignore-exclude',
       '* Include FIGNORE files.') { |val|
       $diff_no_fignore_exclude = !val
     }
-
     opts.on('-R', '--relative[=-]', miniTrueClass,
       '* Use relative path names.') { |val|
       $diff_relative = val
     }
-
     opts.on('-i', '--ignore-case[=-]', miniTrueClass,
       'Ignore case differences in file contents.') { |val|
       set_flag('-i', val)
     }
-
     # not supported (yet)
     #opts.on("--[no-]ignore-file-name-case",
     #  "Ignore case when comparing file names.") { |val|
     #  set_flag("--ignore-file-name-case", val)
     #}
-
     opts.on('-E', '--ignore-tab-expansion[=-]', miniTrueClass,
       'Ignore changes due to tab expansion.') { |val|
       set_flag('-E', val)
     }
-
     opts.on('-b', '--ignore-space-change[=-]', miniTrueClass,
       'Ignore changes in the amount of white space.') { |val|
       set_flag('-b', val)
     }
-
     opts.on('-w', '--ignore-all-space[=-]', miniTrueClass,
       'Ignore all white space.') { |val|
       set_flag('-w', val)
     }
-
     opts.on('-B', '--ignore-blank-lines[=-]', miniTrueClass,
       'Ignore changes whose lines are all blank.') { |val|
       set_flag('-B', val)
     }
-
     opts.on('-I RE', '--ignore-matching-lines=RE',
       'Ignore changes whose lines all match RE.') { |val|
       set_flag('-I', val)
     }
-
     opts.on('--[no-]strip-trailing-cr',
       'Strip trailing carriage return on input.') { |val|
       set_flag('--strip-trailing-cr', val)
     }
-
     opts.on('-a', '--text[=-]', miniTrueClass,
       'Treat all files as text.') { |val|
       set_flag('-a', val)
     }
-
     opts.on('-c[NUM]', '--context[=NUM]', Integer,
       'Output NUM (default 3) lines of copied context.') { |val|
       $diff_format = ['-C', val ? val.to_s : '3']
     }
-
     opts.on('-C NUM', Integer,
       'Output NUM lines of copied context.') { |val|
       $diff_format = ['-C', val.to_s]
     }
-
     opts.on('-u[NUM]', '--unified[=NUM]', Integer,
       'Output NUM (default 3) lines of unified context.') { |val|
       $diff_format = ['-U', val ? val.to_s : '3']
     }
-
     opts.on('-U NUM', Integer,
       'Output NUM lines of unified context.') { |val|
       $diff_format = ['-U', val.to_s]
     }
-
     opts.on('-L LABEL', '--label=LABEL',
       'Use LABEL instead of file name.') { |val|
       set_flag('-L', val)
     }
-
     opts.on('-p', '--show-c-function[=-]', miniTrueClass,
       'Show which C function each change is in.') { |val|
       set_flag('-p', val)
     }
-
     opts.on('-F RE', '--show-function-line=RE',
       'Show the most recent line matching RE.') { |val|
       set_flag('-F', val)
     }
-
     opts.on('-q', '--brief[=-]', miniTrueClass,
       'Output only whether files differ.') { |val|
       set_flag('-q', val)
     }
-
     opts.on('-e', '--ed[=-]', miniTrueClass,
       'Output an ed script.') { |val|
       if val
         $diff_format = ['-e', val]
       end
     }
-
     opts.on('--normal[=-]', miniTrueClass,
       'Output a normal diff.') { |val|
       if val
         $diff_format = ['--normal', val]
       end
     }
-
     opts.on('-n', '--rcs[=-]', miniTrueClass,
       'Output an RCS format diff.') { |val|
       if val
         $diff_format = ['-n', val]
       end
     }
-
     opts.on('-y', '--side-by-side[=-]', miniTrueClass,
       'Output in two columns.') { |val|
       if val
         $diff_format = ['-y', val]
       end
     }
-
     opts.on('-W NUM', '--width=NUM', Integer,
       'Output at most NUM (default 130) print columns.') { |val|
       set_flag('-W', val.to_s)
     }
-
     opts.on('--left-column[=-]', miniTrueClass,
       'Output only the left column of common lines.') { |val|
       set_flag('--left-column', val)
     }
-
     opts.on('--suppress-common-lines[=-]', miniTrueClass,
       'Do not output common lines.') { |val|
       set_flag('--suppress-common-lines', val)
     }
-
     opts.on('-D NAME', '--ifdef=NAME',
       'Output merged file to show `#ifdef NAME\' diffs.') { |val|
       set_flag('-D', val)
     }
-
     opts.on('--old-group-format=GFMT',
       'Format old input groups with GFMT.') { |val|
       set_flag('--old-group-format', val)
     }
-
     opts.on('--new-group-format=GFMT',
       'Format new input groups with GFMT.') { |val|
       set_flag('--new-group-format', val)
     }
-
     opts.on('--unchanged-group-format=GFMT',
       'Format unchanged input groups with GFMT.') { |val|
       set_flag('--unchanged-group-format', val)
     }
-
     opts.on('--line-format=LFMT',
       'Format all input lines with LFMT.') { |val|
       set_flag('--line-format', val)
     }
-
     opts.on('--old-line-format=LFMT',
       'Format old input lines with LFMT.') { |val|
       set_flag('--old-line-format', val)
     }
-
     opts.on('--new-line-format=LFMT',
       'Format new input lines with LFMT.') { |val|
       set_flag('--new-line-format', val)
     }
-
     opts.on('--unchanged-line-format=LFMT',
       'Format unchanged input lines with LFMT.') { |val|
       set_flag('--unchanged-line-format', val)
     }
-
     opts.on('-l', '--paginate[=-]', miniTrueClass,
       'Pass the output through `pr\' to paginate it.') { |val|
       set_flag('-l', val)
     }
-
     opts.on('-t', '--expand-tabs[=-]', miniTrueClass,
       'Expand tabs to spaces in output.') { |val|
       set_flag('-t', val)
     }
-
     opts.on('-T', '--initial-tab[=-]', miniTrueClass,
       'Make tabs line up by prepending a tab.') { |val|
       set_flag('-T', '--initial-tab', val)
     }
-
     opts.on('--tabsize=NUM', Integer,
       'Tab stops are every NUM (default 8) print columns.') { |val|
       set_flag('--tabsize', val.to_s)
     }
-
     opts.on('-r', '--recursive[=-]', miniTrueClass,
       'Recursively compare any subdirectories found.') { |val|
       set_flag('-r', val)
     }
-
     opts.on('-N', '--[no-]new-file[=-]', miniTrueClass,
       'Treat absent files as empty.') { |val|
       set_flag('-N', val)
       $diff_new_file = val
     }
-
     opts.on('--unidirectional-new-file[=-]', miniTrueClass,
       'Treat absent first files as empty.') { |val|
       set_flag('--unidirectional-new-file', val)
     }
-
     opts.on('-s', '--report-identical-files[=-]', miniTrueClass,
       'Report when two files are the same.') { |val|
       set_flag('-s', val)
     }
-
     opts.on('-x PAT', '--exclude=PAT',
       'Exclude files that match PAT.') { |val|
       $diff_exclude << val
     }
-
     opts.on('-X FILE', '--exclude-from=FILE',
       'Exclude files that match any pattern in FILE.') { |val|
       if val == '-'
@@ -343,47 +298,38 @@ usage: #{MYNAME} [flags] [files]
         $diff_exclude.concat(File.read(val).split(/\n/))
       end
     }
-
     opts.on('--include=PAT',
       'Do not exclude files that match PAT.') { |val|
       $diff_include << val
     }
-
     opts.on('-S FILE', '--starting-file=FILE',
       'Start with FILE when comparing directories.') { |val|
       set_flag('-S', val)
     }
-
     opts.on('--from-file=FILE1',
       'Compare FILE1 to all operands.  FILE1 can be a directory.') { |val|
       $diff_from_files = [val]
     }
-
     opts.on('--to-file=FILE2',
       'Compare all operands to FILE2.  FILE2 can be a directory.') { |val|
       $diff_to_files = [val]
     }
-
     opts.on('--horizon-lines=NUM', Integer,
       'Keep NUM lines of the common prefix and suffix.') { |val|
       set_flag('--horizon-lines', val.to_s)
     }
-
     opts.on('-d', '--minimal[=-]', miniTrueClass,
       'Try hard to find a smaller set of changes.') { |val|
       set_flag('-d', val)
     }
-
     opts.on('--speed-large-files[=-]', miniTrueClass,
       'Assume large files and many scattered small changes.') { |val|
       set_flag('--speed-large-files', val)
     }
-
     opts.on('-v', '--version',
       'Output version info.') { |val|
       set_flag('-v', val)
     }
-
     opts.on('--help',
       'Output this help.') { |val|
       print opts,
@@ -433,10 +379,10 @@ usage: #{MYNAME} [flags] [files]
 
       if File.directory?(args[0])
         $diff_to_files   = args.dup
-        $diff_from_files = $diff_to_files.slice!(0, 1)
+        $diff_from_files = [$diff_to_files.shift]
       else
         $diff_from_files = args.dup
-        $diff_to_files   = $diff_from_files.slice!(-1, 1)
+        $diff_to_files   = [$diff_from_files.pop]
       end
     end
 
@@ -452,9 +398,9 @@ end
 def set_flag(flag, val)
   case val
   when false
-    $diff_flags.reject! { |k,| k == flag }
+    $diff_flags.reject! { |f,| f == flag }
   when true
-    $diff_flags.reject! { |k,| k == flag }
+    $diff_flags.reject! { |f,| f == flag }
     $diff_flags << [flag]
   else
     $diff_flags << [flag, val]
@@ -541,7 +487,6 @@ def diff_dirs(dir1, dir2, flags)
   missing2 = entries1 - entries2
 
   files = []
-
   common.each { |file|
     file1 = File.join(dir1, file)
     file2 = File.join(dir2, file)
@@ -562,50 +507,31 @@ def diff_dirs(dir1, dir2, flags)
       end
     end
   }
-
   diff_files(files, dir2, flags)
 
-  new_files1 = []
+  [[dir1, missing2], [dir2, missing1]].each { |dir, missing|
+    new_files = []
+    missing.each { |entry|
+      file = File.join(dir, entry)
 
-  missing2.each { |entry|
-    file = File.join(dir1, entry)
-    dir_p = File.directory?(file)
-
-    if $diff_new_file
-      if dir_p
-        diff_dirs(file, EMPTYDIR, flags)
+      if $diff_new_file
+        if File.directory?(file)
+          diff_dirs(file, EMPTYDIR, flags)
+        else
+          new_files << file
+        end
       else
-        new_files1 << file
+        printf "Only in %s: %s (%s)\n",
+          dir, file, File.directory?(file) ? 'directory' : 'file'
+        $status = 1 if $status < 1
       end
+    }
+    if dir.equal?(dir1)
+      diff_files(new_files, EMPTYFILE, flags)
     else
-      printf "Only in %s: %s (%s)\n",
-        dir1, file, dir_p ? 'directory' : 'file'
-      $status = 1 if $status < 1
+      diff_files(EMPTYFILE, new_files, flags)
     end
   }
-
-  diff_files(new_files1, EMPTYFILE, flags)
-
-  new_files2 = []
-
-  missing1.each { |file|
-    file = File.join(dir2, file)
-    dir_p = File.directory?(file)
-
-    if $diff_new_file
-      if dir_p
-        diff_dirs(EMPTYDIR, file, flags)
-      else
-        new_files2 << file
-      end
-    else
-      printf "Only in %s: %s (%s)\n",
-        dir1, file, dir_p ? 'directory' : 'file'
-      $status = 1 if $status < 1
-    end
-  }
-
-  diff_files(EMPTYFILE, new_files2, flags)
 end
 
 def diff_exclude?(basename)
