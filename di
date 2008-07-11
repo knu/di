@@ -60,7 +60,7 @@ def main(args)
 
   parse_args!(args)
 
-  diff_main($diff_from_files, $diff_to_files, $diff_flags)
+  diff_main($diff.from_files, $diff.to_files, $diff.flags)
 
   exit $status
 end
@@ -72,16 +72,11 @@ def warn(*lines)
 end
 
 def setup
-  $diff_from_files = $diff_to_files = nil
-  $diff_format = nil
-  $diff_relative = false
-  $diff_no_cvs_exclude = false
-  $diff_no_fignore_exclude = false
-  $diff_no_ignore_cvs_lines = false
-  $diff_new_file = false
-  $diff_exclude = []
-  $diff_include = []
-  $diff_flags = []
+  require 'ostruct'
+  $diff = OpenStruct.new
+  $diff.exclude = []
+  $diff.include = []
+  $diff.flags = []
 end
 
 def parse_args!(args)
@@ -102,19 +97,19 @@ usage: #{MYNAME} [flags] [files]
 
     opts.on('--[no-]cvs-exclude',
       '* Include CVS excluded files and directories.') { |val|
-      $diff_no_cvs_exclude = !val
+      $diff.cvs_exclude = val
     }
     opts.on('--[no-]ignore-cvs-lines',
       '* Do not ignore CVS keyword lines.') { |val|
-      $diff_no_ignore_cvs_lines = !val
+      $diff.ignore_cvs_lines = val
     }
     opts.on('--[no-]fignore-exclude',
       '* Include FIGNORE files.') { |val|
-      $diff_no_fignore_exclude = !val
+      $diff.fignore_exclude = val
     }
     opts.on('-R', '--relative[=-]', miniTrueClass,
       '* Use relative path names.') { |val|
-      $diff_relative = val
+      $diff.relative = val
     }
     opts.on('-i', '--ignore-case[=-]', miniTrueClass,
       'Ignore case differences in file contents.') { |val|
@@ -155,19 +150,19 @@ usage: #{MYNAME} [flags] [files]
     }
     opts.on('-c[NUM]', '--context[=NUM]', Integer,
       'Output NUM (default 3) lines of copied context.') { |val|
-      $diff_format = ['-C', val ? val.to_s : '3']
+      $diff.format = ['-C', val ? val.to_s : '3']
     }
     opts.on('-C NUM', Integer,
       'Output NUM lines of copied context.') { |val|
-      $diff_format = ['-C', val.to_s]
+      $diff.format = ['-C', val.to_s]
     }
     opts.on('-u[NUM]', '--unified[=NUM]', Integer,
       'Output NUM (default 3) lines of unified context.') { |val|
-      $diff_format = ['-U', val ? val.to_s : '3']
+      $diff.format = ['-U', val ? val.to_s : '3']
     }
     opts.on('-U NUM', Integer,
       'Output NUM lines of unified context.') { |val|
-      $diff_format = ['-U', val.to_s]
+      $diff.format = ['-U', val.to_s]
     }
     opts.on('-L LABEL', '--label=LABEL',
       'Use LABEL instead of file name.') { |val|
@@ -188,25 +183,25 @@ usage: #{MYNAME} [flags] [files]
     opts.on('-e', '--ed[=-]', miniTrueClass,
       'Output an ed script.') { |val|
       if val
-        $diff_format = ['-e', val]
+        $diff.format = ['-e', val]
       end
     }
     opts.on('--normal[=-]', miniTrueClass,
       'Output a normal diff.') { |val|
       if val
-        $diff_format = ['--normal', val]
+        $diff.format = ['--normal', val]
       end
     }
     opts.on('-n', '--rcs[=-]', miniTrueClass,
       'Output an RCS format diff.') { |val|
       if val
-        $diff_format = ['-n', val]
+        $diff.format = ['-n', val]
       end
     }
     opts.on('-y', '--side-by-side[=-]', miniTrueClass,
       'Output in two columns.') { |val|
       if val
-        $diff_format = ['-y', val]
+        $diff.format = ['-y', val]
       end
     }
     opts.on('-W NUM', '--width=NUM', Integer,
@@ -272,11 +267,12 @@ usage: #{MYNAME} [flags] [files]
     opts.on('-r', '--recursive[=-]', miniTrueClass,
       'Recursively compare any subdirectories found.') { |val|
       set_flag('-r', val)
+      $diff.recursive = val
     }
     opts.on('-N', '--[no-]new-file[=-]', miniTrueClass,
       'Treat absent files as empty.') { |val|
       set_flag('-N', val)
-      $diff_new_file = val
+      $diff.new_file = val
     }
     opts.on('--unidirectional-new-file[=-]', miniTrueClass,
       'Treat absent first files as empty.') { |val|
@@ -288,19 +284,19 @@ usage: #{MYNAME} [flags] [files]
     }
     opts.on('-x PAT', '--exclude=PAT',
       'Exclude files that match PAT.') { |val|
-      $diff_exclude << val
+      $diff.exclude << val
     }
     opts.on('-X FILE', '--exclude-from=FILE',
       'Exclude files that match any pattern in FILE.') { |val|
       if val == '-'
-        $diff_exclude.concat(STDIN.read.split(/\n/))
+        $diff.exclude.concat(STDIN.read.split(/\n/))
       else
-        $diff_exclude.concat(File.read(val).split(/\n/))
+        $diff.exclude.concat(File.read(val).split(/\n/))
       end
     }
     opts.on('--include=PAT',
       'Do not exclude files that match PAT.') { |val|
-      $diff_include << val
+      $diff.include << val
     }
     opts.on('-S FILE', '--starting-file=FILE',
       'Start with FILE when comparing directories.') { |val|
@@ -308,11 +304,11 @@ usage: #{MYNAME} [flags] [files]
     }
     opts.on('--from-file=FILE1',
       'Compare FILE1 to all operands.  FILE1 can be a directory.') { |val|
-      $diff_from_files = [val]
+      $diff.from_files = [val]
     }
     opts.on('--to-file=FILE2',
       'Compare all operands to FILE2.  FILE2 can be a directory.') { |val|
-      $diff_to_files = [val]
+      $diff.to_files = [val]
     }
     opts.on('--horizon-lines=NUM', Integer,
       'Keep NUM lines of the common prefix and suffix.') { |val|
@@ -340,15 +336,13 @@ usage: #{MYNAME} [flags] [files]
   }
 
   begin
-    opts.parse('-N')
-    opts.parse('-p')
-    opts.parse('-d')
+    opts.parse('--cvs-exclude', '--fignore-exclude', '--ignore-cvs-lines', '-N', '-r', '-p', '-d')
     opts.parse!(args)
 
-    $diff_format ||= ['-U', '3']
-    set_flag(*$diff_format)
+    $diff.format ||= ['-U', '3']
+    set_flag(*$diff.format)
 
-    unless $diff_no_ignore_cvs_lines
+    if $diff.ignore_cvs_lines
       opts.parse('--ignore-matching-lines=\$[A-Z][A-Za-z0-9][A-Za-z0-9]*\(:.*\)\{0,1\}\$')
     end
   rescue OptionParser::ParseError => e
@@ -360,16 +354,16 @@ usage: #{MYNAME} [flags] [files]
   end
 
   begin
-    if $diff_from_files
-      $diff_to_files ||= args.dup
+    if $diff.from_files
+      $diff.to_files ||= args.dup
 
-      if $diff_to_files.empty?
+      if $diff.to_files.empty?
         raise "missing operand"
       end
-    elsif $diff_to_files
-      $diff_from_files = args.dup
+    elsif $diff.to_files
+      $diff.from_files = args.dup
 
-      if $diff_from_files.empty?
+      if $diff.from_files.empty?
         raise "missing operand"
       end
     else
@@ -378,15 +372,15 @@ usage: #{MYNAME} [flags] [files]
       end
 
       if File.directory?(args[0])
-        $diff_to_files   = args.dup
-        $diff_from_files = [$diff_to_files.shift]
+        $diff.to_files   = args.dup
+        $diff.from_files = [$diff.to_files.shift]
       else
-        $diff_from_files = args.dup
-        $diff_to_files   = [$diff_from_files.pop]
+        $diff.from_files = args.dup
+        $diff.to_files   = [$diff.from_files.pop]
       end
     end
 
-    if $diff_from_files.size != 1 && $diff_to_files.size != 1
+    if $diff.from_files.size != 1 && $diff.to_files.size != 1
       raise "wrong number of files given"
     end
   rescue => e
@@ -398,12 +392,12 @@ end
 def set_flag(flag, val)
   case val
   when false
-    $diff_flags.reject! { |f,| f == flag }
+    $diff.flags.reject! { |f,| f == flag }
   when true
-    $diff_flags.reject! { |f,| f == flag }
-    $diff_flags << [flag]
+    $diff.flags.reject! { |f,| f == flag }
+    $diff.flags << [flag]
   else
-    $diff_flags << [flag, val]
+    $diff.flags << [flag, val]
   end
 end
 
@@ -414,13 +408,13 @@ def diff_main(from_files, to_files, flags)
     if File.directory?(from_file)
       to_files.each { |to_file|
         if File.directory?(to_file)
-          if $diff_relative
+          if $diff.relative
             to_file = File.expand_path(from_file, to_file)
           end
 
           diff_dirs(from_file, to_file, flags)
         else
-          if $diff_relative
+          if $diff.relative
             from_file = File.expand_path(to_file, from_file)
           else
             from_file = File.expand_path(File.basename(to_file), from_file)
@@ -432,7 +426,7 @@ def diff_main(from_files, to_files, flags)
     else
       to_files.each { |to_file|
         if File.directory?(to_file)
-          if $diff_relative
+          if $diff.relative
             to_file = File.expand_path(from_file, to_file)
           else
             to_file = File.expand_path(File.basename(from_file), to_file)
@@ -462,10 +456,8 @@ end
 
 def call_diff(*args)
   system(DIFF_CMD, *args.flatten)
-
   status = $? >> 8
   $status = status if $status < status
-
   return status
 end
 
@@ -493,7 +485,7 @@ def diff_dirs(dir1, dir2, flags)
 
     if File.directory?(file1)
       if File.directory?(file2)
-        diff_dirs(file1, file2, flags)
+        diff_dirs(file1, file2, flags) if $diff.recursive
       else
         missing1 << file2
         missing2 << file1
@@ -514,7 +506,7 @@ def diff_dirs(dir1, dir2, flags)
     missing.each { |entry|
       file = File.join(dir, entry)
 
-      if $diff_new_file
+      if $diff.new_file
         if File.directory?(file)
           diff_dirs(file, EMPTYDIR, flags)
         else
@@ -522,7 +514,7 @@ def diff_dirs(dir1, dir2, flags)
         end
       else
         printf "Only in %s: %s (%s)\n",
-          dir, file, File.directory?(file) ? 'directory' : 'file'
+          dir, entry, File.directory?(file) ? 'directory' : 'file'
         $status = 1 if $status < 1
       end
     }
@@ -536,23 +528,18 @@ end
 
 def diff_exclude?(basename)
   return true if basename == '.' || basename == '..'
-
-  return false if $diff_include.any? { |pat|
+  return false if $diff.include.any? { |pat|
     File.fnmatch(pat, basename, File::FNM_DOTMATCH)
   }
-
-  return true if $diff_exclude.any? { |pat|
+  return true if $diff.exclude.any? { |pat|
     File.fnmatch(pat, basename, File::FNM_DOTMATCH)
   }
-
-  return true if !$diff_no_cvs_exclude && CVS_EXCLUDE_GLOBS.any? { |pat|
+  return true if $diff.cvs_exclude && CVS_EXCLUDE_GLOBS.any? { |pat|
     File.fnmatch(pat, basename, File::FNM_DOTMATCH)
   }
-
-  return true if !$diff_no_fignore_exclude && FIGNORE_GLOBS.any? { |pat|
+  return true if $diff.fignore_exclude && FIGNORE_GLOBS.any? { |pat|
     File.fnmatch(pat, basename, File::FNM_DOTMATCH)
   }
-
   return false
 end
 
