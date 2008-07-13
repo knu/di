@@ -461,14 +461,6 @@ def call_diff(*args)
   return status
 end
 
-def diff_entries(dir)
-  return [] if dir.nil?
-  return Dir.entries(dir).reject { |file| diff_exclude?(file) }
-rescue => e
-  warn "#{dir}: #{e}"
-  return []
-end
-
 def diff_dirs(dir1, dir2)
   entries1 = diff_entries(dir1)
   entries2 = diff_entries(dir2)
@@ -521,6 +513,14 @@ def diff_dirs(dir1, dir2)
       diff_files(EMPTYFILE, new_files)
     end
   }
+end
+
+def diff_entries(dir)
+  return [] if dir.nil?
+  return Dir.entries(dir).reject { |file| diff_exclude?(file) }
+rescue => e
+  warn "#{dir}: #{e}"
+  return []
 end
 
 def diff_exclude?(basename)
