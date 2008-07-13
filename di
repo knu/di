@@ -461,18 +461,17 @@ def call_diff(*args)
   return status
 end
 
-def diff_dirs(dir1, dir2)
-  if dir1.nil?
-    entries1 = []
-  else
-    entries1 = Dir.entries(dir1).reject { |file| diff_exclude?(file) }
-  end
+def diff_entries(dir)
+  return [] if dir.nil?
+  return Dir.entries(dir).reject { |file| diff_exclude?(file) }
+rescue => e
+  warn "#{dir}: #{e}"
+  return []
+end
 
-  if dir2.nil?
-    entries2 = []
-  else
-    entries2 = Dir.entries(dir2).reject { |file| diff_exclude?(file) }
-  end
+def diff_dirs(dir1, dir2)
+  entries1 = diff_entries(dir1)
+  entries2 = diff_entries(dir2)
 
   common = entries1 & entries2
   missing1 = entries2 - entries1
