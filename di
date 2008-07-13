@@ -36,7 +36,6 @@ MYDATE = %w$Date$[1]
 MYNAME = File.basename($0)
 
 DIFF_CMD = ENV.fetch('DIFF', 'diff')
-EMPTYDIR  = nil
 EMPTYFILE = '/dev/null'
 
 CVS_EXCLUDE_GLOBS = %w(
@@ -463,13 +462,13 @@ def call_diff(*args)
 end
 
 def diff_dirs(dir1, dir2)
-  if dir1 == EMPTYDIR
+  if dir1.nil?
     entries1 = []
   else
     entries1 = Dir.entries(dir1).reject { |file| diff_exclude?(file) }
   end
 
-  if dir2 == EMPTYDIR
+  if dir2.nil?
     entries2 = []
   else
     entries2 = Dir.entries(dir2).reject { |file| diff_exclude?(file) }
@@ -503,7 +502,11 @@ def diff_dirs(dir1, dir2)
 
       if $diff.new_file
         if File.directory?(file)
-          diff_dirs(file, EMPTYDIR)
+          if dir.equal?(dir1)
+            diff_dirs(file, nil)
+          else
+            diff_dirs(nil, file)
+          end
         else
           new_files << file
         end
