@@ -30,7 +30,7 @@
 #
 # $Id$
 
-MYVERSION = "0.1.0"
+MYVERSION = "0.1.1"
 MYREVISION = %w$Rev$[1]
 MYDATE = %w$Date$[1]
 MYNAME = File.basename($0)
@@ -38,7 +38,7 @@ MYNAME = File.basename($0)
 DIFF_CMD = ENV.fetch('DIFF', 'diff')
 EMPTYFILE = '/dev/null'
 
-CVS_EXCLUDE_GLOBS = %w(
+RSYNC_EXCLUDE_GLOBS = %w(
   RCS SCCS CVS CVS.adm
   RCSLOG cvslog.* tags TAGS
   .make.state .nse_depinfo *~
@@ -94,20 +94,20 @@ usage: #{MYNAME} [flags] [files]
     hash['-'] = false
     opts.accept(miniTrueClass, hash) {|arg, val| val == nil or val}
 
-    opts.on('--[no-]cvs-exclude',
-      '* Include CVS excluded files and directories.') { |val|
-      $diff.cvs_exclude = val
+    opts.on('--[no-]rsync-exclude', '--[no-]cvs-exclude',
+      'Exclude some kinds of files and directories a la rsync(1). [!][*]') { |val|
+      $diff.rsync_exclude = val
     }
     opts.on('--[no-]ignore-cvs-lines',
-      '* Do not ignore CVS keyword lines.') { |val|
+      'Ignore CVS keyword lines. [!][*]') { |val|
       $diff.ignore_cvs_lines = val
     }
     opts.on('--[no-]fignore-exclude',
-      '* Include FIGNORE files.') { |val|
+      'Ignore files having suffixes specified in FIGNORE. [!][*]') { |val|
       $diff.fignore_exclude = val
     }
     opts.on('-R', '--relative[=-]', miniTrueClass,
-      '* Use relative path names.') { |val|
+      'Use relative path names. [*]') { |val|
       $diff.relative = val
     }
     opts.on('-i', '--ignore-case[=-]', miniTrueClass,
@@ -156,7 +156,7 @@ usage: #{MYNAME} [flags] [files]
       $diff.format = ['-C', val.to_s]
     }
     opts.on('-u[NUM]', '--unified[=NUM]', Integer,
-      'Output NUM (default 3) lines of unified context.') { |val|
+      'Output NUM (default 3) lines of unified context. [!]') { |val|
       $diff.format = ['-U', val ? val.to_s : '3']
     }
     opts.on('-U NUM', Integer,
@@ -168,7 +168,7 @@ usage: #{MYNAME} [flags] [files]
       set_flag('-L', val)
     }
     opts.on('-p', '--show-c-function[=-]', miniTrueClass,
-      'Show which C function each change is in.') { |val|
+      'Show which C function each change is in. [!]') { |val|
       set_flag('-p', val)
     }
     opts.on('-F RE', '--show-function-line=RE',
@@ -264,12 +264,12 @@ usage: #{MYNAME} [flags] [files]
       set_flag('--tabsize', val.to_s)
     }
     opts.on('-r', '--recursive[=-]', miniTrueClass,
-      'Recursively compare any subdirectories found.') { |val|
+      'Recursively compare any subdirectories found. [!]') { |val|
       set_flag('-r', val)
       $diff.recursive = val
     }
     opts.on('-N', '--[no-]new-file[=-]', miniTrueClass,
-      'Treat absent files as empty.') { |val|
+      'Treat absent files as empty. [!]') { |val|
       set_flag('-N', val)
       $diff.new_file = val
     }
@@ -314,7 +314,7 @@ usage: #{MYNAME} [flags] [files]
       set_flag('--horizon-lines', val.to_s)
     }
     opts.on('-d', '--minimal[=-]', miniTrueClass,
-      'Try hard to find a smaller set of changes.') { |val|
+      'Try hard to find a smaller set of changes. [!]') { |val|
       set_flag('-d', val)
     }
     opts.on('--speed-large-files[=-]', miniTrueClass,
@@ -330,12 +330,14 @@ usage: #{MYNAME} [flags] [files]
       print opts,
         "\n",
         "Options without the [*] sign will be passed through to diff(1).\n"
+        "Options marked as [!] sign are turned on by default.  To turn them off,\n"
+        "specify -?- for short options and --no-??? for long options, respectively.\n"
       exit 0
     }
   }
 
   begin
-    opts.parse('--cvs-exclude', '--fignore-exclude', '--ignore-cvs-lines',
+    opts.parse('--rsync-exclude', '--fignore-exclude', '--ignore-cvs-lines',
                '-N', '-r', '-p', '-d')
     opts.parse!(args)
 
@@ -531,7 +533,7 @@ def diff_exclude?(basename)
   return true if $diff.exclude.any? { |pat|
     File.fnmatch(pat, basename, File::FNM_DOTMATCH)
   }
-  return true if $diff.cvs_exclude && CVS_EXCLUDE_GLOBS.any? { |pat|
+  return true if $diff.rsync_exclude && RSYNC_EXCLUDE_GLOBS.any? { |pat|
     File.fnmatch(pat, basename, File::FNM_DOTMATCH)
   }
   return true if $diff.fignore_exclude && FIGNORE_GLOBS.any? { |pat|
