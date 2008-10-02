@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 # -*- mode: ruby; coding: utf-8 -*-
 #
-# di.rb - a wrapper around GNU diff(1)
+# di - a wrapper around GNU diff(1)
 #
 # Copyright (c) 2008 Akinori MUSHA
 #
