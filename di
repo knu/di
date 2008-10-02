@@ -329,8 +329,8 @@ usage: #{MYNAME} [flags] [files]
       'Output this help.') { |val|
       print opts,
         "\n",
-        "Options without the [*] sign will be passed through to diff(1).\n"
-        "Options marked as [!] sign are turned on by default.  To turn them off,\n"
+        "Options without the [*] sign will be passed through to diff(1).\n",
+        "Options marked as [!] sign are turned on by default.  To turn them off,\n",
         "specify -?- for short options and --no-??? for long options, respectively.\n"
       exit 0
     }
