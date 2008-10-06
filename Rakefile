@@ -4,7 +4,7 @@ require 'rake/gempackagetask'
 
 spec = Gem::Specification.new { |spec|
   spec.name = "di"
-  spec.version = "0.1.1"
+  spec.version = "0.1.2"
   spec.summary = "A wrapper around GNU diff(1)"
   spec.author = "Akinori MUSHA"
   spec.email = "knu@idaemons.org"
