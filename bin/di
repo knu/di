@@ -3,7 +3,7 @@
 #
 # di - a wrapper around GNU diff(1)
 #
-# Copyright (c) 2008 Akinori MUSHA
+# Copyright (c) 2008, 2009, 2010 Akinori MUSHA
 #
 # All rights reserved.
 #
@@ -72,6 +72,8 @@ def setup
   $diff.exclude = []
   $diff.include = []
   $diff.flags = []
+  $diff.format_flags = []
+  $diff.custom_format_p = false
 end
 
 def parse_args!(args)
@@ -79,7 +81,7 @@ def parse_args!(args)
 
   banner = <<-"EOF"
 #{MYNAME} - a wrapper around GNU diff(1)
-  version #{MYVERSION} [revision #{MYREVISION}] (#{MYDATE})
+  version #{MYVERSION}
 
 usage: #{MYNAME} [flags] [files]
   EOF
@@ -145,19 +147,19 @@ usage: #{MYNAME} [flags] [files]
     }
     opts.on('-c[NUM]', '--context[=NUM]', Integer,
       'Output NUM (default 3) lines of copied context.') { |val|
-      $diff.format = ['-C', val ? val.to_s : '3']
+      set_format_flag('-C', val ? val.to_s : '3')
     }
     opts.on('-C NUM', Integer,
       'Output NUM lines of copied context.') { |val|
-      $diff.format = ['-C', val.to_s]
+      set_format_flag('-C', val.to_s)
     }
     opts.on('-u[NUM]', '--unified[=NUM]', Integer,
       'Output NUM (default 3) lines of unified context. [!]') { |val|
-      $diff.format = ['-U', val ? val.to_s : '3']
+      set_format_flag('-U', val ? val.to_s : '3')
     }
     opts.on('-U NUM', Integer,
       'Output NUM lines of unified context.') { |val|
-      $diff.format = ['-U', val.to_s]
+      set_format_flag('-U', val.to_s)
     }
     opts.on('-L LABEL', '--label=LABEL',
       'Use LABEL instead of file name.') { |val|
@@ -178,25 +180,25 @@ usage: #{MYNAME} [flags] [files]
     opts.on('-e', '--ed[=-]', miniTrueClass,
       'Output an ed script.') { |val|
       if val
-        $diff.format = ['-e', val]
+        set_format_flag('-e', val)
       end
     }
     opts.on('--normal[=-]', miniTrueClass,
       'Output a normal diff.') { |val|
       if val
-        $diff.format = ['--normal', val]
+        set_format_flag('--normal', val)
       end
     }
     opts.on('-n', '--rcs[=-]', miniTrueClass,
       'Output an RCS format diff.') { |val|
       if val
-        $diff.format = ['-n', val]
+        set_format_flag('-n', val)
       end
     }
     opts.on('-y', '--side-by-side[=-]', miniTrueClass,
       'Output in two columns.') { |val|
       if val
-        $diff.format = ['-y', val]
+        set_format_flag('-y', val)
       end
     }
     opts.on('-W NUM', '--width=NUM', Integer,
@@ -213,35 +215,39 @@ usage: #{MYNAME} [flags] [files]
     }
     opts.on('-D NAME', '--ifdef=NAME',
       'Output merged file to show `#ifdef NAME\' diffs.') { |val|
-      set_flag('-D', val)
+      set_format_flag('-D', val)
     }
     opts.on('--old-group-format=GFMT',
       'Format old input groups with GFMT.') { |val|
-      set_flag('--old-group-format', val)
+      set_custom_format_flag('--old-group-format', val)
     }
     opts.on('--new-group-format=GFMT',
       'Format new input groups with GFMT.') { |val|
-      set_flag('--new-group-format', val)
+      set_custom_format_flag('--new-group-format', val)
+    }
+    opts.on('--changed-group-format=GFMT',
+      'Format changed input groups with GFMT.') { |val|
+      set_custom_format_flag('--changed-group-format', val)
     }
     opts.on('--unchanged-group-format=GFMT',
       'Format unchanged input groups with GFMT.') { |val|
-      set_flag('--unchanged-group-format', val)
+      set_custom_format_flag('--unchanged-group-format', val)
     }
     opts.on('--line-format=LFMT',
       'Format all input lines with LFMT.') { |val|
-      set_flag('--line-format', val)
+      set_custom_format_flag('--line-format', val)
     }
     opts.on('--old-line-format=LFMT',
       'Format old input lines with LFMT.') { |val|
-      set_flag('--old-line-format', val)
+      set_custom_format_flag('--old-line-format', val)
     }
     opts.on('--new-line-format=LFMT',
       'Format new input lines with LFMT.') { |val|
-      set_flag('--new-line-format', val)
+      set_custom_format_flag('--new-line-format', val)
     }
     opts.on('--unchanged-line-format=LFMT',
       'Format unchanged input lines with LFMT.') { |val|
-      set_flag('--unchanged-line-format', val)
+      set_custom_format_flag('--unchanged-line-format', val)
     }
     opts.on('-l', '--paginate[=-]', miniTrueClass,
       'Pass the output through `pr\' to paginate it.') { |val|
@@ -334,11 +340,12 @@ usage: #{MYNAME} [flags] [files]
 
   begin
     opts.parse('--rsync-exclude', '--fignore-exclude', '--ignore-cvs-lines',
-               '-N', '-r', '-p', '-d')
+               '-U3', '-N', '-r', '-p', '-d')
     opts.parse!(args)
 
-    $diff.format ||= ['-U', '3']
-    set_flag(*$diff.format)
+    $diff.format_flags.each { |format_flag|
+      set_flag(*format_flag)
+    }
 
     if $diff.ignore_cvs_lines
       opts.parse('--ignore-matching-lines="^[^\x1b]*\$[A-Z][A-Za-z0-9][A-Za-z0-9]*\(:.*\)\{0,1\}\$')
@@ -397,6 +404,20 @@ def set_flag(flag, val)
   else
     $diff.flags << [flag, val]
   end
+end
+
+def set_format_flag(flag, *val)
+  $diff.format_flags.clear
+  $diff.custom_format_p = false
+  $diff.format_flags.push([flag, *val])
+end
+
+def set_custom_format_flag(flag, *val)
+  if !$diff.custom_format_p
+    $diff.format_flags.clear
+    $diff.custom_format_p = true
+  end
+  $diff.format_flags.push([flag, *val])
 end
 
 def diff_main

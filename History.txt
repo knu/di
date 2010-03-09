@@ -1,5 +1,12 @@
 == 0.1.2 2008-10-06
 
+* Fix handling of the following options and make custom format options
+  work:
+    -D/--ifdef=NAME
+    --GTYPE-group-format=GFMT
+    --line-format=LFMT
+    --LTYPE-line-format=LFMT
+
 * Fix a problem where escape sequence ESC $ B .. : is regarded as CVS
   keyword, which often appears in a text encoded in ISO-2022-JP.
 

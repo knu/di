@@ -41,7 +41,7 @@ gem install di
 
 == LICENSE:
 
-Copyright (c) 2008 Akinori MUSHA
+Copyright (c) 2008, 2009, 2010 Akinori MUSHA
 
 All rights reserved.
 
