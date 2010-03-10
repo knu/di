@@ -440,13 +440,21 @@ def invoke_pager!
   $stdout.flush
   $stderr.flush
   pr, pw = IO.pipe
+  ppid = Process.pid
   pid = fork {
     $stdin.reopen(pr)
     pr.close
     pw.close
     IO.select([$stdin], nil, [$stdin])
-    exec(ENV['PAGER'] || 'more')
+    if system(ENV['PAGER'] || 'more')
+      Process.kill(:TERM, ppid)
+    else
+      $stderr.puts "Pager failed."
+      Process.kill(:INT, ppid)
+    end
   }
+  trap(:TERM) { exit(0) }
+  trap(:INT) { exit(130) }
   $stdout.reopen(pw)
   $stderr.reopen(pw) if $stderr.tty?
   pw.close
