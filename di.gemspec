@@ -5,7 +5,7 @@
 
 Gem::Specification.new do |s|
   s.name = %q{di}
-  s.version = "0.1.4"
+  s.version = "0.1.5"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Akinori MUSHA"]
@@ -36,6 +36,7 @@ default settings and some original features.
   s.homepage = %q{http://github.com/knu/di}
   s.rdoc_options = ["--charset=UTF-8"]
   s.require_paths = ["lib"]
+  s.required_ruby_version = Gem::Requirement.new(">= 1.8.7")
   s.rubygems_version = %q{1.3.6}
   s.summary = %q{A wrapper around GNU diff(1)}
   s.test_files = [
