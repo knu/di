@@ -73,8 +73,24 @@ def setup
   $diff.include = []
   $diff.flags = []
   $diff.format_flags = []
+  $diff.format = :normal
   $diff.custom_format_p = false
   $diff.use_pager = false
+  $diff.colorize = false
+  $diff.highlight_whitespace = true
+  $diff.colors = {
+    :comment	=> "\033[1m",
+    :file1	=> "\033[1m",
+    :file2	=> "\033[1m",
+    :header	=> "\033[36m",
+    :function	=> "\033[m",
+    :new	=> "\033[32m",
+    :old	=> "\033[31m",
+    :changed	=> "\033[33m",
+    :unchanged	=> "",
+    :whitespace	=> "\033[41m",
+    :off	=> "\033[m",
+  }
 end
 
 def parse_args!(args)
@@ -96,6 +112,10 @@ usage: #{MYNAME} [flags] [files]
     opts.on('--[no-]pager',
       'Pipe output into pager if stdout is a terminal. [!][*]') { |val|
       $diff.use_pager = val if $stdout.tty?
+    }
+    opts.on('--[no-]color',
+      'Colorize output if stdout is a terminal and the format is unified or context. [!][*]') { |val|
+      $diff.colorize = val if $stdout.tty?
     }
     opts.on('--[no-]rsync-exclude', '--[no-]cvs-exclude',
       'Exclude some kinds of files and directories a la rsync(1). [!][*]') { |val|
@@ -350,7 +370,8 @@ EOS
   }
 
   begin
-    opts.parse('--rsync-exclude', '--fignore-exclude', '--ignore-cvs-lines', '--pager',
+    opts.parse('--rsync-exclude', '--fignore-exclude', '--ignore-cvs-lines',
+               '--pager', '--color',
                '-U3', '-N', '-r', '-p', '-d')
 
     if value = ENV['DI_OPTIONS']
@@ -453,6 +474,24 @@ end
 def set_format_flag(flag, *val)
   $diff.format_flags.clear
   $diff.custom_format_p = false
+  case flag
+  when '-C'
+    $diff.format = :context
+  when '-U'
+    $diff.format = :unified
+  when '-e'
+    $diff.format = :ed
+  when '--normal'
+    $diff.format = :normal
+  when '-n'
+    $diff.format = :rcs
+  when '-y'
+    $diff.format = :side_by_side
+  when '-D'
+    $diff.format = :ifdef
+  else
+    $diff.format = :unknown
+  end
   $diff.format_flags.push([flag, *val])
 end
 
@@ -461,6 +500,7 @@ def set_custom_format_flag(flag, *val)
     $diff.format_flags.clear
     $diff.custom_format_p = true
   end
+  $diff.format = :custom
   $diff.format_flags.push([flag, *val])
 end
 
@@ -520,7 +560,21 @@ def diff_files(file1, file2)
 end
 
 def call_diff(*args)
-  system(*[DIFF_CMD, $diff.flags, args].flatten)
+  command_args = [DIFF_CMD, $diff.flags, args].flatten
+  if $diff.colorize
+    case $diff.format
+    when :unified
+      filter = method(:colorize_unified_diff)
+    when :context
+      filter = method(:colorize_context_diff)
+    end
+  end
+  if filter
+    require 'shellwords'
+    filter.call(IO.popen(command_args.shelljoin, 'r'))
+  else
+    system(*command_args)
+  end
   status = $? >> 8
   $status = status if $status < status
   return status
@@ -603,6 +657,144 @@ def diff_exclude?(basename)
     File.fnmatch(pat, basename, File::FNM_DOTMATCH)
   }
   return false
+end
+
+def colorize_unified_diff(io)
+  colors = $diff.colors
+
+  state = :comment
+  hunk_left = nil
+  io.each_line { |line|
+    case state
+    when :comment
+      case line
+      when /^\+{3} /
+        color = colors[:file1]
+      when /^-{3} /
+        color = colors[:file2]
+      when /^@@ -[0-9]+,([0-9]+)/
+        state = :hunk
+        hunk_left = $1.to_i
+        line.sub!(/^(@@ .*? @@)( )?/) {
+          $1 + ($2 ? colors[:off] + $2 + colors[:function] : '')
+        }
+        color = colors[:header]
+      else
+        color = colors[:comment]
+      end
+    when :hunk
+      check = false
+      case line
+      when /^\+/
+        color = colors[:new]
+        check = $diff.highlight_whitespace
+      when /^-/
+        color = colors[:old]
+        hunk_left -= 1
+        check = $diff.highlight_whitespace
+      when /^ /
+        color = colors[:unchanged]
+        hunk_left -= 1
+      else
+        # error
+        color = colors[:comment]
+      end
+      if check
+        line.sub!(/([ \t]+)$/) {
+          colors[:off] + colors[:whitespace] + $1
+        }
+      end
+      if hunk_left <= 0
+        state = :comment
+        hunk_left = nil
+      end
+    end
+
+    line.sub!(/^/, color)
+    line.sub!(/$/, colors[:off])
+
+    print line
+  }
+
+  io.close
+end
+
+def colorize_context_diff(io)
+  colors = $diff.colors
+
+  state = :comment
+  hunk_part = nil
+  io.each_line { |line|
+    case state
+    when :comment
+      case line
+      when /^\*{3} /
+        color = colors[:file1]
+      when /^-{3} /
+        color = colors[:file2]
+      when /^\*{15}/
+        state = :hunk
+        hunk_part = 0
+        line.sub!(/^(\*{15})( )?/) {
+          $1 + ($2 ? colors[:off] + $2 + colors[:function] : '')
+        }
+        color = colors[:header]
+      end
+    when :hunk
+      case hunk_part
+      when 0
+        case line
+        when /^\*{3} /
+          hunk_part = 1
+          color = colors[:header]
+        else
+          # error
+          color = colors[:comment]
+        end
+      when 1, 2
+        check = false
+        case line
+        when /^\-{3} /
+          if hunk_part == 1
+            hunk_part = 2
+            color = colors[:header]
+          else
+            #error
+            color = colors[:comment]
+          end
+        when /^\*{3} /, /^\*{15} /
+          state = :comment
+          redo
+        when /^\+ /
+          color = colors[:new]
+          check = $diff.highlight_whitespace
+        when /^- /
+          color = colors[:old]
+          check = $diff.highlight_whitespace
+        when /^! /
+          color = colors[:changed]
+          check = $diff.highlight_whitespace
+        when /^  /
+          color = colors[:unchanged]
+        else
+          # error
+          color = colors[:comment]
+        end
+        if check
+          line.sub!(/^(...*)([ \t]+)$/) {
+            $1 + colors[:off] + colors[:whitespace] + $2
+          }
+        end
+      end
+    end
+
+    line.sub!(/^/, color)
+    line.sub!(/$/, colors[:off])
+
+    print line
+  }
+
+  io.close
 end
 
 main(ARGV)

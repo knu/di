@@ -1,5 +1,7 @@
 * Add --[no-]pager and turn it on by default.
 
+* Add --[no-]color and colorize diff output by default.
+
 * Read user's preferred default options from DI_OPTIONS.
 
 * Do not choke on file names starting with a hyphen.
