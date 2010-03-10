@@ -1,3 +1,5 @@
+* Fix hunk colorization.
+
 == 0.1.5 2010-03-10
 
 * Add --[no-]color and colorize diff output by default.

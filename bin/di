@@ -680,9 +680,9 @@ def colorize_unified_diff(io)
         color = colors[:file1]
       when /^-{3} /
         color = colors[:file2]
-      when /^@@ -[0-9]+,([0-9]+)/
+      when /^@@ -[0-9]+,([0-9]+) \+[0-9]+,([0-9]+)/
         state = :hunk
-        hunk_left = $1.to_i
+        hunk_left = $1.to_i + $2.to_i
         line.sub!(/^(@@ .*? @@)( )?/) {
           $1 + ($2 ? colors[:off] + $2 + colors[:function] : '')
         }
@@ -695,6 +695,7 @@ def colorize_unified_diff(io)
       case line
       when /^\+/
         color = colors[:new]
+        hunk_left -= 1
         check = $diff.highlight_whitespace
       when /^-/
         color = colors[:old]
@@ -702,7 +703,7 @@ def colorize_unified_diff(io)
         check = $diff.highlight_whitespace
       when /^ /
         color = colors[:unchanged]
-        hunk_left -= 1
+        hunk_left -= 2
       else
         # error
         color = colors[:comment]
