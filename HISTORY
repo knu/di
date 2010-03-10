@@ -1,3 +1,5 @@
+* Add --[no-]pager and turn it on by default.
+
 * Do not choke on file names starting with a hyphen.
 
 == 0.1.3 2010-03-10

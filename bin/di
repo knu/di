@@ -74,6 +74,7 @@ def setup
   $diff.flags = []
   $diff.format_flags = []
   $diff.custom_format_p = false
+  $diff.use_pager = false
 end
 
 def parse_args!(args)
@@ -92,6 +93,10 @@ usage: #{MYNAME} [flags] [files]
     hash['-'] = false
     opts.accept(miniTrueClass, hash) {|arg, val| val == nil or val}
 
+    opts.on('--[no-]pager',
+      'Pipe output into $PAGER (or more(1) if not defined) if stdout is a terminal. [!][*]') { |val|
+      $diff.use_pager = val
+    }
     opts.on('--[no-]rsync-exclude', '--[no-]cvs-exclude',
       'Exclude some kinds of files and directories a la rsync(1). [!][*]') { |val|
       $diff.rsync_exclude = val
@@ -329,17 +334,18 @@ usage: #{MYNAME} [flags] [files]
     }
     opts.on('--help',
       'Output this help.') { |val|
-      print opts,
-        "\n",
-        "Options without the [*] sign will be passed through to diff(1).\n",
-        "Options marked as [!] sign are turned on by default.  To turn them off,\n",
-        "specify -?- for short options and --no-??? for long options, respectively.\n"
+      invoke_pager
+      print opts, <<EOS
+Options without the [*] sign will be passed through to diff(1).
+Options marked as [!] sign are turned on by default.  To turn them off,
+specify -?- for short options and --no-??? for long options, respectively.
+EOS
       exit 0
     }
   }
 
   begin
-    opts.parse('--rsync-exclude', '--fignore-exclude', '--ignore-cvs-lines',
+    opts.parse('--rsync-exclude', '--fignore-exclude', '--ignore-cvs-lines', '--pager',
                '-U3', '-N', '-r', '-p', '-d')
     opts.parse!(args)
 
@@ -394,6 +400,33 @@ usage: #{MYNAME} [flags] [files]
   end
 end
 
+def invoke_pager
+  invoke_pager! if $diff.use_pager && $stdout.tty?
+end
+
+def invoke_pager!
+  $stdout.flush
+  $stderr.flush
+  pr, pw = IO.pipe
+  pid = fork {
+    $stdin.reopen(pr)
+    pr.close
+    pw.close
+    IO.select([$stdin], nil, [$stdin])
+    exec(ENV['PAGER'] || 'more')
+  }
+  $stdout.reopen(pw)
+  $stderr.reopen(pw) if $stderr.tty?
+  pw.close
+  at_exit {
+    $stdout.flush
+    $stderr.flush
+    $stdout.close
+    $stderr.close
+    Process.waitpid(pid)
+  }
+end
+
 def set_flag(flag, val)
   case val
   when false
@@ -421,6 +454,8 @@ def set_custom_format_flag(flag, *val)
 end
 
 def diff_main
+  invoke_pager
+
   $status = 0
 
   $diff.from_files.each { |from_file|
