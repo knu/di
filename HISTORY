@@ -1,8 +1,12 @@
-* Add --[no-]pager and turn it on by default.
+== 0.1.5 2010-03-10
 
 * Add --[no-]color and colorize diff output by default.
 
 * Read user's preferred default options from DI_OPTIONS.
+
+== 0.1.4 2010-03-10
+
+* Add --[no-]pager and turn it on by default.
 
 * Do not choke on file names starting with a hyphen.
 
