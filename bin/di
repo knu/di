@@ -463,13 +463,13 @@ def diff_files(file1, file2)
     file2.is_a?(Array) and raise "cannot compare two sets of multiple files"
     file1.empty? and return 0
 
-    call_diff('--to-file', file2, file1)
+    call_diff('--to-file', file2, '--', file1)
   elsif file2.is_a?(Array)
     file1.empty? and return 0
 
-    call_diff('--from-file', file1, file2)
+    call_diff('--from-file', file1, '--', file2)
   else
-    call_diff(file1, file2)
+    call_diff('--', file1, file2)
   end
 end
 
