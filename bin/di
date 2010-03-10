@@ -94,7 +94,7 @@ usage: #{MYNAME} [flags] [files]
     opts.accept(miniTrueClass, hash) {|arg, val| val == nil or val}
 
     opts.on('--[no-]pager',
-      'Pipe output into $PAGER (or more(1) if not defined) if stdout is a terminal. [!][*]') { |val|
+      'Pipe output into pager if stdout is a terminal. [!][*]') { |val|
       $diff.use_pager = val if $stdout.tty?
     }
     opts.on('--[no-]rsync-exclude', '--[no-]cvs-exclude',
@@ -342,6 +342,7 @@ specify -?- for short options and --no-??? for long options, respectively.
 
 Environment variables:
     DIFF        Path to diff(1)
+    PAGER       Path to pager (more(1) is used if not defined)
 EOS
       exit 0
     }
