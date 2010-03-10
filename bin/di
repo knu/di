@@ -339,6 +339,9 @@ usage: #{MYNAME} [flags] [files]
 Options without the [*] sign will be passed through to diff(1).
 Options marked as [!] sign are turned on by default.  To turn them off,
 specify -?- for short options and --no-??? for long options, respectively.
+
+Environment variables:
+    DIFF        Path to diff(1)
 EOS
       exit 0
     }
