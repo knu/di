@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = %q{di}
-  s.version = "0.1.5"
+  s.version = "0.1.6"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Akinori MUSHA"]
-  s.date = %q{2010-03-10}
+  s.date = %q{2010-03-11}
   s.default_executable = %q{di}
   s.description = %q{The di(1) command wraps around GNU diff(1) to provide reasonable
 default settings and some original features.
