@@ -342,6 +342,7 @@ specify -?- for short options and --no-??? for long options, respectively.
 
 Environment variables:
     DIFF        Path to diff(1)
+    DI_OPTIONS  User's preferred default options
     PAGER       Path to pager (more(1) is used if not defined)
 EOS
       exit 0
@@ -351,6 +352,12 @@ EOS
   begin
     opts.parse('--rsync-exclude', '--fignore-exclude', '--ignore-cvs-lines', '--pager',
                '-U3', '-N', '-r', '-p', '-d')
+
+    if value = ENV['DI_OPTIONS']
+      require 'shellwords'
+      opts.parse(*value.shellsplit)
+    end
+
     opts.parse!(args)
 
     $diff.format_flags.each { |format_flag|
