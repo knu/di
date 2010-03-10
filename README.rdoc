@@ -11,19 +11,25 @@ di - a wrapper around GNU diff(1)
 The di(1) command wraps around GNU diff(1) to provide reasonable
 default settings and some original features:
 
-  - Ignore non-significant files, such as backup files, object files,
-    VCS administration files, etc. a la rsync(1)'s --cvs-ignore
-    option.
+  - Useful options turned on by default: -U3 -N -p -d.
+
+  - Diff output is colorized, and paginated by user's favorite pager.
+
+  - Non-significant files are ignored by default, such as backup
+    files, object files, VCS administration files, etc. a la
+    rsync(1)'s --cvs-ignore option.
 
   - Ignore difference of lines containing RCS tags.
 
-  - Output in unified format by default.
-
   - Perform recursive comparison.
 
-  - Turn on some other useful options: -N -p -d.
+  - Support combinations of command line options that GNU diff(1) is
+    expected to but does not support.
 
-  - Provide the way to negate any of the above options.
+  - Default set of options are configurable via environment variable.
+
+  - Any option can be negated from a command line. (Specify -N- to
+    negate the default -N, etc.)
 
 == SYNOPSIS:
 
