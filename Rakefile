@@ -13,6 +13,7 @@ EOS
     gem.email = "knu@idaemons.org"
     gem.homepage = "http://github.com/knu/di"
     gem.authors = ["Akinori MUSHA"]
+    gem.required_ruby_version = Gem::Requirement.new(">= 1.8.7")
     gem.add_development_dependency "thoughtbot-shoulda", ">= 0"
     # gem is a Gem::Specification... see http://www.rubygems.org/read/chapter/20 for additional settings
     gem.executables = ["di"]
