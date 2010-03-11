@@ -35,6 +35,26 @@ default settings and some original features:
 
 Run di --help for help.
 
+== USAGE:
+
+Just use di(1) for diff(1).
+
+If you want to use this with svn, you should have a non-paginating
+version of di because svn calls the external diff for each changed
+file:
+
+    ln di ndi
+
+With a default option set in your shell's startup file:
+
+    NDI_OPTIONS=--no-pager
+    export NDI_OPTIONS
+
+Then finally set diff-cmd to the command in ~/.subversion/config.
+
+    [helpers]
+    diff-cmd = ndi
+
 == REQUIREMENTS:
 
 - Ruby 1.8.7 or later
@@ -44,6 +64,8 @@ Run di --help for help.
 == INSTALL:
 
 gem install di
+
+Or just put bin/di to a directory in your PATH.
 
 == COPYRIGHT:
 
