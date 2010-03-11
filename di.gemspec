@@ -27,7 +27,6 @@ default settings and some original features.
      "LICENSE",
      "README.rdoc",
      "Rakefile",
-     "VERSION",
      "bin/di",
      "di.gemspec",
      "test/helper.rb",

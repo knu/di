@@ -814,4 +814,4 @@ def colorize_context_diff(io)
   io.close
 end
 
-main(ARGV)
+main(ARGV) if $0 == __FILE__

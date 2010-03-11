@@ -1,6 +1,8 @@
 require 'rubygems'
 require 'rake'
 
+load "bin/di"
+
 begin
   require 'jeweler'
   Jeweler::Tasks.new do |gem|
@@ -17,6 +19,8 @@ EOS
     gem.add_development_dependency "thoughtbot-shoulda", ">= 0"
     # gem is a Gem::Specification... see http://www.rubygems.org/read/chapter/20 for additional settings
     gem.executables = ["di"]
+
+    gem.version = MYVERSION
   end
   Jeweler::GemcutterTasks.new
 rescue LoadError
