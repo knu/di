@@ -37,20 +37,23 @@ Run di --help for help.
 
 == USAGE:
 
-Just use di(1) for diff(1).
+Just use di(1) for diff(1) as a wrapper.
 
-If you want to use this with svn, you should have a non-paginating
-version of di because svn calls the external diff for each changed
-file:
+There are a few occations you shouldn't simply substitute di(1) for
+diff(1).  For example, svn calls the external diff for each changed
+file, so the pagination enabled by default would be annoying.
 
+In such a case, you can have a non-paginating version of di as below:
+
+    # Give it another name
     ln di ndi
 
-With a default option set in your shell's startup file:
-
+    # Set default options for the new command; put these lines in your
+    # shell's startup file
     NDI_OPTIONS=--no-pager
     export NDI_OPTIONS
 
-Then finally set diff-cmd to the command in ~/.subversion/config.
+Then set diff-cmd to the new command in ~/.subversion/config.
 
     [helpers]
     diff-cmd = ndi
@@ -63,7 +66,7 @@ Then finally set diff-cmd to the command in ~/.subversion/config.
 
 == INSTALL:
 
-gem install di
+    gem install di
 
 Or just put bin/di to a directory in your PATH.
 
