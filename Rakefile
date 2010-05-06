@@ -1,7 +1,7 @@
 require 'rubygems'
 require 'rake'
 
-load "bin/di"
+load 'lib/di.rb'
 
 begin
   require 'jeweler'

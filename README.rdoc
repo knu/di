@@ -68,7 +68,7 @@ Then set diff-cmd to the new command in ~/.subversion/config.
 
     gem install di
 
-Or just put bin/di to a directory in your PATH.
+Or just install lib/di.rb as "di" to a directory in your PATH.
 
 == COPYRIGHT:
 
