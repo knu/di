@@ -76,10 +76,6 @@ def setup
   $diff.flags = []
   $diff.format_flags = []
   $diff.format = :normal
-  $diff.custom_format_p = false
-  $diff.use_pager = false
-  $diff.colorize = false
-  $diff.highlight_whitespace = true
   $diff.colors = {
     :comment	=> "\033[1m",
     :file1	=> "\033[1m",
@@ -119,6 +115,10 @@ usage: #{MYNAME} [flags] [files]
     opts.on('--[no-]color',
       'Colorize output if stdout is a terminal and the format is unified or context. [!][*]') { |val|
       $diff.colorize = val if $stdout.tty?
+    }
+    opts.on('--[no-]highlight-whitespace',
+      'Highlight suspicious whitespace differences in colorized output. [!][*]') { |val|
+      $diff.highlight_whitespace = val
     }
     opts.on('--[no-]rsync-exclude', '--[no-]cvs-exclude',
       'Exclude some kinds of files and directories a la rsync(1). [!][*]') { |val|
@@ -385,7 +385,7 @@ EOS
 
   begin
     opts.parse('--rsync-exclude', '--fignore-exclude', '--ignore-cvs-lines',
-               '--pager', '--color',
+               '--pager', '--color', '--highlight-whitespace',
                '-U3', '-N', '-r', '-p', '-d')
 
     if value = ENV[ENV_NAME]
@@ -726,6 +726,9 @@ def colorize_unified_diff(io)
         line.sub!(/([ \t]+)$/) {
           colors[:off] + colors[:whitespace] + $1
         }
+        true while line.sub!(/^(.[ \t]*)( +)(\t)/) {
+          $1 + colors[:off] + colors[:whitespace] + $2 + colors[:off] + color + $3
+        }
       end
       if hunk_left <= 0
         state = :comment
@@ -804,8 +807,11 @@ def colorize_context_diff(io)
           color = colors[:comment]
         end
         if check
-          line.sub!(/^(...*)([ \t]+)$/) {
+          line.sub!(/^(. .*)([ \t]+)$/) {
             $1 + colors[:off] + colors[:whitespace] + $2
+          }
+          true while line.sub!(/^(. [ \t]*)( +)(\t)/) {
+            $1 + colors[:off] + colors[:whitespace] + $2 + colors[:off] + color + $3
           }
         end
       end
