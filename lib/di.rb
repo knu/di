@@ -107,9 +107,10 @@ usage: #{MYNAME} [flags] [files]
 
   opts = OptionParser.new(banner) { |opts|
     miniTrueClass = Class.new
-    hash = OptionParser::CompletingHash.new
-    hash['-'] = false
-    opts.accept(miniTrueClass, hash) {|arg, val| val == nil or val}
+    miniTrueClassHash = OptionParser::CompletingHash['-', false]
+    opts.accept(miniTrueClass, miniTrueClassHash) { |arg, val|
+      val == nil or val
+    }
 
     opts.on('--[no-]pager',
       'Pipe output into pager if stdout is a terminal. [!][*]') { |val|
