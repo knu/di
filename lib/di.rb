@@ -83,17 +83,17 @@ def setup
   $diff.format_flags = []
   $diff.format = :normal
   $diff.colors = {
-    :comment	=> "\033[1m",
-    :file1	=> "\033[1m",
-    :file2	=> "\033[1m",
-    :header	=> "\033[36m",
-    :function	=> "\033[m",
-    :new	=> "\033[32m",
-    :old	=> "\033[31m",
-    :changed	=> "\033[33m",
+    :comment	=> "\e[1m",
+    :file1	=> "\e[1m",
+    :file2	=> "\e[1m",
+    :header	=> "\e[36m",
+    :function	=> "\e[m",
+    :new	=> "\e[32m",
+    :old	=> "\e[31m",
+    :changed	=> "\e[33m",
     :unchanged	=> "",
-    :whitespace	=> "\033[41m",
-    :off	=> "\033[m",
+    :whitespace	=> "\e[41m",
+    :off	=> "\e[m",
   }
 end
 
@@ -418,13 +418,13 @@ EOS
 
   begin
     if $diff.from_files
-      $diff.to_files ||= args.dup
+      $diff.to_files ||= args
 
       if $diff.to_files.empty?
         raise "missing operand"
       end
     elsif $diff.to_files
-      $diff.from_files = args.dup
+      $diff.from_files = args
 
       if $diff.from_files.empty?
         raise "missing operand"
@@ -434,12 +434,10 @@ EOS
         raise "missing operand"
       end
 
-      if File.directory?(args[0])
-        $diff.to_files   = args.dup
-        $diff.from_files = [$diff.to_files.shift]
+      if File.directory?(args.first)
+        $diff.to_files, $diff.from_files = args[0..0], args[1..-1]
       else
-        $diff.from_files = args.dup
-        $diff.to_files   = [$diff.from_files.pop]
+        $diff.from_files, $diff.to_files = args[0..-2], args[-1..-1]
       end
     end
 
@@ -489,11 +487,9 @@ end
 
 def set_flag(flag, val)
   case val
-  when false
+  when true, false
     $diff.flags.reject! { |f,| f == flag }
-  when true
-    $diff.flags.reject! { |f,| f == flag }
-    $diff.flags << [flag]
+    $diff.flags << [flag] if val
   else
     $diff.flags << [flag, val]
   end
@@ -520,7 +516,7 @@ def set_format_flag(flag, *val)
   else
     $diff.format = :unknown
   end
-  $diff.format_flags.push([flag, *val])
+  $diff.format_flags << [flag, *val]
 end
 
 def set_custom_format_flag(flag, *val)
@@ -529,7 +525,7 @@ def set_custom_format_flag(flag, *val)
     $diff.custom_format_p = true
   end
   $diff.format = :custom
-  $diff.format_flags.push([flag, *val])
+  $diff.format_flags << [flag, *val]
 end
 
 def diff_main
