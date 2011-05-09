@@ -35,7 +35,7 @@ default settings and some original features.
   s.homepage = %q{http://github.com/knu/di}
   s.require_paths = ["lib"]
   s.required_ruby_version = Gem::Requirement.new(">= 1.8.7")
-  s.rubygems_version = %q{1.3.7}
+  s.rubygems_version = %q{1.6.2}
   s.summary = %q{A wrapper around GNU diff(1)}
   s.test_files = [
     "test/helper.rb",
@@ -43,7 +43,6 @@ default settings and some original features.
   ]
 
   if s.respond_to? :specification_version then
-    current_version = Gem::Specification::CURRENT_SPECIFICATION_VERSION
     s.specification_version = 3
 
     if Gem::Version.new(Gem::VERSION) >= Gem::Version.new('1.2.0') then
