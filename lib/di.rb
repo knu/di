@@ -3,7 +3,7 @@
 #
 # di - a wrapper around GNU diff(1)
 #
-# Copyright (c) 2008, 2009, 2010 Akinori MUSHA
+# Copyright (c) 2008, 2009, 2010, 2011 Akinori MUSHA
 #
 # All rights reserved.
 #
@@ -28,25 +28,31 @@
 # OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 # SUCH DAMAGE.
 
-MYVERSION = "0.1.9"
+MYVERSION = "0.2.0"
 MYNAME = File.basename($0)
-MYCOPYRIGHT = "Copyright (c) 2008, 2009, 2010 Akinori MUSHA"
+MYCOPYRIGHT = "Copyright (c) 2008, 2009, 2010, 2011 Akinori MUSHA"
 
 DIFF_CMD = ENV.fetch('DIFF', 'diff')
 ENV_NAME = "#{MYNAME.tr('-a-z', '_A-Z')}_OPTIONS"
 EMPTYFILE = '/dev/null'
 
-RSYNC_EXCLUDE_GLOBS = %w(
-  RCS SCCS CVS CVS.adm
-  RCSLOG cvslog.* tags TAGS
-  .make.state .nse_depinfo *~
-  \#* .\#* ,* _$*
-  *$ *.old *.bak *.BAK
-  *.orig *.rej *.del-* *.a
-  *.olb *.o *.obj *.so
-  *.exe *.Z *.elc *.ln
-  core .svn .git .bzr .hg
-)
+RSYNC_EXCLUDE_FILE_GLOBS = [
+  'tags', 'TAGS', 'GTAGS', 'GRTAGS', 'GSYMS', 'GPATH',
+  '.make.state', '.nse_depinfo',
+  '*~', '\#*', '.\#*', ',*', '_$*', '*$',
+  '*.old', '*.bak', '*.BAK',
+  '*.orig', '*.rej', '*.del-*',
+  '*.a', '*.olb', '*.o', '*.obj',
+  /\A[^.].*[^.]\.so(?:\.[0-9]+)*\z/,
+  '*.bundle', '*.dylib',
+  '*.exe', '*.Z', '*.elc', '*.py[co]', '*.ln',
+  /\Acore(?:\.[0-9]+)*\z/,
+]
+
+RSYNC_EXCLUDE_DIR_GLOBS = [
+  'RCS', 'SCCS', 'CVS', 'CVS.adm',
+  '.svn', '.git', '.bzr', '.hg',
+]
 
 FIGNORE_GLOBS = ENV.fetch('FIGNORE', '').split(':').map { |pat|
   '*' + pat
@@ -658,13 +664,13 @@ end
 
 def diff_entries(dir)
   return [] if dir.nil?
-  return Dir.entries(dir).reject { |file| diff_exclude?(file) }
+  return Dir.entries(dir).reject { |file| diff_exclude?(dir, file) }
 rescue => e
   warn "#{dir}: #{e}"
   return []
 end
 
-def diff_exclude?(basename)
+def diff_exclude?(dir, basename)
   return true if basename == '.' || basename == '..'
   return false if $diff.include.any? { |pat|
     File.fnmatch(pat, basename, File::FNM_DOTMATCH)
@@ -672,12 +678,21 @@ def diff_exclude?(basename)
   return true if $diff.exclude.any? { |pat|
     File.fnmatch(pat, basename, File::FNM_DOTMATCH)
   }
-  return true if $diff.rsync_exclude && RSYNC_EXCLUDE_GLOBS.any? { |pat|
-    File.fnmatch(pat, basename, File::FNM_DOTMATCH)
-  }
   return true if $diff.fignore_exclude && FIGNORE_GLOBS.any? { |pat|
     File.fnmatch(pat, basename, File::FNM_DOTMATCH)
   }
+  return true if $diff.rsync_exclude &&
+    if File.directory?(File.join(dir, basename))
+      RSYNC_EXCLUDE_DIR_GLOBS
+    else
+      RSYNC_EXCLUDE_FILE_GLOBS
+    end.any? { |pat|
+      if Regexp === pat
+        pat.match(basename)
+      else
+        File.fnmatch(pat, basename, File::FNM_DOTMATCH)
+      end
+    }
   return false
 end
 
