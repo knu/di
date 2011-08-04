@@ -5,17 +5,16 @@
 
 Gem::Specification.new do |s|
   s.name = %q{di}
-  s.version = "0.2.0"
+  s.version = "0.2.1"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
-  s.authors = ["Akinori MUSHA"]
-  s.date = %q{2011-05-09}
-  s.default_executable = %q{di}
+  s.authors = [%q{Akinori MUSHA}]
+  s.date = %q{2011-08-04}
   s.description = %q{The di(1) command wraps around GNU diff(1) to provide reasonable
 default settings and some original features.
 }
   s.email = %q{knu@idaemons.org}
-  s.executables = ["di"]
+  s.executables = [%q{di}]
   s.extra_rdoc_files = [
     "LICENSE",
     "README.rdoc"
@@ -33,14 +32,10 @@ default settings and some original features.
     "test/test_di.rb"
   ]
   s.homepage = %q{http://github.com/knu/di}
-  s.require_paths = ["lib"]
+  s.require_paths = [%q{lib}]
   s.required_ruby_version = Gem::Requirement.new(">= 1.8.7")
-  s.rubygems_version = %q{1.6.2}
+  s.rubygems_version = %q{1.8.5}
   s.summary = %q{A wrapper around GNU diff(1)}
-  s.test_files = [
-    "test/helper.rb",
-    "test/test_di.rb"
-  ]
 
   if s.respond_to? :specification_version then
     s.specification_version = 3
