@@ -1,3 +1,10 @@
+== 0.2.1 2011-08-04
+
+* Make the regexp pattern used for --ignore-cvs-lines more specific so
+  it does not misfire on Perl scripts.
+
+* Disable --pager on Ruby 1.9, which currently stalls.
+
 == 0.2.0 2011-05-09
 
 * Update the default exclude pattern list:
