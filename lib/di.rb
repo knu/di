@@ -131,7 +131,7 @@ usage: #{MYNAME} [flags] [files]
       $diff.rsync_exclude = val
     }
     opts.on('--[no-]ignore-cvs-lines',
-      'Ignore CVS keyword lines. [!][*]') { |val|
+      'Ignore CVS/RCS keyword lines. [!][*]') { |val|
       $diff.ignore_cvs_lines = val
     }
     opts.on('--[no-]fignore-exclude',
@@ -406,7 +406,7 @@ EOS
     }
 
     if $diff.ignore_cvs_lines
-      opts.parse('--ignore-matching-lines="^[^\x1b]*\$[A-Z][A-Za-z0-9][A-Za-z0-9]*\(:.*\)\{0,1\}\$')
+      opts.parse('-I', '\$\(LastChanged\(Date\|Revision\|By\)\|Date\|Revision\|Rev\|Author\|HeadURL\|URL\|Id\|Header\|\(Free\|Net\|Open\)BSD\|Name\|Locker\|Log\|RCSfile\|Source\|State\)\(\|: .* \|:: .*[ #]\)\$')
     end
   rescue OptionParser::ParseError => e
     warn e, "Try `#{MYNAME} --help' for more information."
