@@ -116,7 +116,7 @@ usage: #{MYNAME} [flags] [files]
 
     opts.on('--[no-]pager',
       'Pipe output into pager if stdout is a terminal. [!][*]') { |val|
-      $diff.use_pager = val if $stdout.tty?
+      $diff.use_pager = val if $stdout.tty? && RUBY_VERSION < "1.9"
     }
     opts.on('--[no-]color',
       'Colorize output if stdout is a terminal and the format is unified or context. [!][*]') { |val|
