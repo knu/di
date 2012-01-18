@@ -1,3 +1,7 @@
+== 0.2.2 2012-01-18
+
+* Try to fix a bug where "di DIR FILE..." produces a reversed diff.
+
 == 0.2.1 2011-08-04
 
 * Make the regexp pattern used for --ignore-cvs-lines more specific so

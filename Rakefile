@@ -13,7 +13,7 @@ The di(1) command wraps around GNU diff(1) to provide reasonable
 default settings and some original features.
 EOS
     gem.email = "knu@idaemons.org"
-    gem.homepage = "http://github.com/knu/di"
+    gem.homepage = "https://github.com/knu/di"
     gem.authors = ["Akinori MUSHA"]
     gem.required_ruby_version = Gem::Requirement.new(">= 1.8.7")
     gem.add_development_dependency "thoughtbot-shoulda", ">= 0"
