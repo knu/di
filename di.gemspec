@@ -4,17 +4,15 @@
 # -*- encoding: utf-8 -*-
 
 Gem::Specification.new do |s|
-  s.name = %q{di}
-  s.version = "0.2.1"
+  s.name = "di"
+  s.version = "0.2.2"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
-  s.authors = [%q{Akinori MUSHA}]
-  s.date = %q{2011-08-04}
-  s.description = %q{The di(1) command wraps around GNU diff(1) to provide reasonable
-default settings and some original features.
-}
-  s.email = %q{knu@idaemons.org}
-  s.executables = [%q{di}]
+  s.authors = ["Akinori MUSHA"]
+  s.date = "2012-01-18"
+  s.description = "The di(1) command wraps around GNU diff(1) to provide reasonable\ndefault settings and some original features.\n"
+  s.email = "knu@idaemons.org"
+  s.executables = ["di"]
   s.extra_rdoc_files = [
     "LICENSE",
     "README.rdoc"
@@ -31,11 +29,11 @@ default settings and some original features.
     "test/helper.rb",
     "test/test_di.rb"
   ]
-  s.homepage = %q{http://github.com/knu/di}
-  s.require_paths = [%q{lib}]
+  s.homepage = "https://github.com/knu/di"
+  s.require_paths = ["lib"]
   s.required_ruby_version = Gem::Requirement.new(">= 1.8.7")
-  s.rubygems_version = %q{1.8.5}
-  s.summary = %q{A wrapper around GNU diff(1)}
+  s.rubygems_version = "1.8.15"
+  s.summary = "A wrapper around GNU diff(1)"
 
   if s.respond_to? :specification_version then
     s.specification_version = 3
