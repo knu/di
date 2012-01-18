@@ -95,6 +95,7 @@ def setup
     :whitespace	=> "\e[41m",
     :off	=> "\e[m",
   }
+  $diff.reversed = false
 end
 
 def parse_args!(args)
@@ -436,6 +437,7 @@ EOS
 
       if File.directory?(args.first)
         $diff.to_files, $diff.from_files = args[0..0], args[1..-1]
+        $diff.reversed = true
       else
         $diff.from_files, $diff.to_files = args[0..-2], args[-1..-1]
       end
@@ -569,6 +571,7 @@ def diff_main
 end
 
 def diff_files(file1, file2)
+  file1, file2 = file2, file1 if $diff.reversed
   if file1.is_a?(Array)
     file2.is_a?(Array) and raise "cannot compare two sets of multiple files"
     file1.empty? and return 0
@@ -629,7 +632,11 @@ def diff_dirs(dir1, dir2)
   }
   diff_files(files, dir2)
 
-  [[dir1, missing2], [dir2, missing1]].each { |dir, missing|
+  if $diff.reversed
+    [[dir1, missing2], [dir2, missing1]]
+  else
+    [[dir2, missing1], [dir1, missing2]]
+  end.each { |dir, missing|
     new_files = []
     missing.each { |entry|
       file = File.join(dir, entry)
