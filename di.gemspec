@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = "di"
-  s.version = "0.2.2"
+  s.version = "0.2.3"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Akinori MUSHA"]
-  s.date = "2012-01-18"
+  s.date = "2012-03-29"
   s.description = "The di(1) command wraps around GNU diff(1) to provide reasonable\ndefault settings and some original features.\n"
   s.email = "knu@idaemons.org"
   s.executables = ["di"]
