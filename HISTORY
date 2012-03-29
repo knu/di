@@ -1,3 +1,8 @@
+== 0.2.3 2012-03-29
+
+* Fix the case where comparing two directories fails when the latter
+  contains a directory that the former doesn't have.
+
 == 0.2.2 2012-01-18
 
 * Try to fix a bug where "di DIR FILE..." produces a reversed diff.
