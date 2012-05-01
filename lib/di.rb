@@ -58,6 +58,8 @@ FIGNORE_GLOBS = ENV.fetch('FIGNORE', '').split(':').map { |pat|
   '*' + pat
 }
 
+IO::NULL = '/dev/null' unless defined? IO::NULL
+
 def main(args)
   setup
 
@@ -117,7 +119,7 @@ usage: #{MYNAME} [flags] [files]
 
     opts.on('--[no-]pager',
       'Pipe output into pager if stdout is a terminal. [!][*]') { |val|
-      $diff.use_pager = val if $stdout.tty? && RUBY_VERSION < "1.9"
+      $diff.use_pager = val if $stdout.tty?
     }
     opts.on('--[no-]color',
       'Colorize output if stdout is a terminal and the format is unified or context. [!][*]') { |val|
@@ -481,8 +483,8 @@ def invoke_pager!
   at_exit {
     $stdout.flush
     $stderr.flush
-    $stdout.close
-    $stderr.close
+    $stdout.reopen(IO::NULL)
+    $stderr.reopen(IO::NULL)
     Process.waitpid(pid)
   }
 end
