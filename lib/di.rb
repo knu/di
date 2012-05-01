@@ -468,15 +468,13 @@ def invoke_pager!
     pr.close
     pw.close
     IO.select([$stdin], nil, [$stdin])
-    if system(ENV['PAGER'] || 'more')
-      Process.kill(:TERM, ppid)
-    else
+    begin
+      exec(ENV['PAGER'] || 'more')
+    rescue
       $stderr.puts "Pager failed."
-      Process.kill(:INT, ppid)
     end
   }
-  trap(:TERM) { exit(0) }
-  trap(:INT) { exit(130) }
+
   $stdout.reopen(pw)
   $stderr.reopen(pw) if $stderr.tty?
   pw.close
