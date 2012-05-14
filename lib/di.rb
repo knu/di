@@ -254,37 +254,21 @@ usage: #{MYNAME} [flags] [files]
       'Output merged file to show `#ifdef NAME\' diffs.') { |val|
       set_format_flag('-D', val)
     }
-    opts.on('--old-group-format=GFMT',
-      'Format old input groups with GFMT.') { |val|
-      set_custom_format_flag('--old-group-format', val)
-    }
-    opts.on('--new-group-format=GFMT',
-      'Format new input groups with GFMT.') { |val|
-      set_custom_format_flag('--new-group-format', val)
-    }
-    opts.on('--changed-group-format=GFMT',
-      'Format changed input groups with GFMT.') { |val|
-      set_custom_format_flag('--changed-group-format', val)
-    }
-    opts.on('--unchanged-group-format=GFMT',
-      'Format unchanged input groups with GFMT.') { |val|
-      set_custom_format_flag('--unchanged-group-format', val)
+    %w[old new changed unchanged].each { |gtype|
+      opts.on("--#{gtype}-group-format=GFMT",
+        "Format #{gtype} input groups with GFMT.") { |val|
+        set_custom_format_flag("--#{gtype}-group-format", val)
+      }
     }
     opts.on('--line-format=LFMT',
       'Format all input lines with LFMT.') { |val|
       set_custom_format_flag('--line-format', val)
     }
-    opts.on('--old-line-format=LFMT',
-      'Format old input lines with LFMT.') { |val|
-      set_custom_format_flag('--old-line-format', val)
-    }
-    opts.on('--new-line-format=LFMT',
-      'Format new input lines with LFMT.') { |val|
-      set_custom_format_flag('--new-line-format', val)
-    }
-    opts.on('--unchanged-line-format=LFMT',
-      'Format unchanged input lines with LFMT.') { |val|
-      set_custom_format_flag('--unchanged-line-format', val)
+    %w[old new changed unchanged].each { |ltype|
+      opts.on("--#{ltype}-line-format=LFMT",
+        "Format #{ltype} input lines with LFMT.") { |val|
+        set_custom_format_flag("--#{ltype}-line-format", val)
+      }
     }
     opts.on('-l', '--paginate[=-]', miniTrueClass,
       'Pass the output through `pr\' to paginate it.') { |val|
