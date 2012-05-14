@@ -280,7 +280,7 @@ usage: #{MYNAME} [flags] [files]
     }
     opts.on('-T', '--initial-tab[=-]', miniTrueClass,
       'Make tabs line up by prepending a tab.') { |val|
-      set_flag('-T', '--initial-tab', val)
+      set_flag('-T', val)
     }
     opts.on('--tabsize=NUM', Integer,
       'Tab stops are every NUM (default 8) print columns.') { |val|
