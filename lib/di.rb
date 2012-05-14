@@ -118,31 +118,31 @@ usage: #{MYNAME} [flags] [files]
     }
 
     opts.on('--[no-]pager',
-      'Pipe output into pager if stdout is a terminal. [!][*]') { |val|
+      'Pipe output into pager if stdout is a terminal. [+][*]') { |val|
       $diff.use_pager = val if $stdout.tty?
     }
     opts.on('--[no-]color',
-      'Colorize output if stdout is a terminal and the format is unified or context. [!][*]') { |val|
+      'Colorize output if stdout is a terminal and the format is unified or context. [+][*]') { |val|
       $diff.colorize = val if $stdout.tty?
     }
     opts.on('--[no-]highlight-whitespace',
-      'Highlight suspicious whitespace differences in colorized output. [!][*]') { |val|
+      'Highlight suspicious whitespace differences in colorized output. [+][*]') { |val|
       $diff.highlight_whitespace = val
     }
     opts.on('--[no-]rsync-exclude', '--[no-]cvs-exclude',
-      'Exclude some kinds of files and directories a la rsync(1). [!][*]') { |val|
+      'Exclude some kinds of files and directories a la rsync(1). [+][*]') { |val|
       $diff.rsync_exclude = val
     }
     opts.on('--[no-]ignore-cvs-lines',
-      'Ignore CVS/RCS keyword lines. [!][*]') { |val|
+      'Ignore CVS/RCS keyword lines. [+][*]') { |val|
       $diff.ignore_cvs_lines = val
     }
     opts.on('--[no-]fignore-exclude',
-      'Ignore files having suffixes specified in FIGNORE. [!][*]') { |val|
+      'Ignore files having suffixes specified in FIGNORE. [+][*]') { |val|
       $diff.fignore_exclude = val
     }
     opts.on('-R', '--relative[=-]', miniTrueClass,
-      'Use relative path names. [*]') { |val|
+      'Use relative path names.') { |val|
       $diff.relative = val
     }
     opts.on('-i', '--ignore-case[=-]', miniTrueClass,
@@ -191,7 +191,7 @@ usage: #{MYNAME} [flags] [files]
       set_format_flag('-C', val.to_s)
     }
     opts.on('-u[NUM]', '--unified[=NUM]', Integer,
-      'Output NUM (default 3) lines of unified context. [!]') { |val|
+      'Output NUM (default 3) lines of unified context. [+]') { |val|
       set_format_flag('-U', val ? val.to_s : '3')
     }
     opts.on('-U NUM', Integer,
@@ -203,7 +203,7 @@ usage: #{MYNAME} [flags] [files]
       set_flag('-L', val)
     }
     opts.on('-p', '--show-c-function[=-]', miniTrueClass,
-      'Show which C function each change is in. [!]') { |val|
+      'Show which C function each change is in. [+]') { |val|
       set_flag('-p', val)
     }
     opts.on('-F RE', '--show-function-line=RE',
@@ -291,12 +291,12 @@ usage: #{MYNAME} [flags] [files]
       set_flag('--suppress-blank-empty', val)
     }
     opts.on('-r', '--recursive[=-]', miniTrueClass,
-      'Recursively compare any subdirectories found. [!]') { |val|
+      'Recursively compare any subdirectories found. [+]') { |val|
       set_flag('-r', val)
       $diff.recursive = val
     }
     opts.on('-N', '--[no-]new-file[=-]', miniTrueClass,
-      'Treat absent files as empty. [!]') { |val|
+      'Treat absent files as empty. [+]') { |val|
       set_flag('-N', val)
       $diff.new_file = val
     }
@@ -341,7 +341,7 @@ usage: #{MYNAME} [flags] [files]
       set_flag('--horizon-lines', val.to_s)
     }
     opts.on('-d', '--minimal[=-]', miniTrueClass,
-      'Try hard to find a smaller set of changes. [!]') { |val|
+      'Try hard to find a smaller set of changes. [+]') { |val|
       set_flag('-d', val)
     }
     opts.on('--speed-large-files[=-]', miniTrueClass,
@@ -363,8 +363,8 @@ usage: #{MYNAME} [flags] [files]
       'Output this help.') { |val|
       invoke_pager
       print opts, <<EOS
-Options without the [*] sign will be passed through to diff(1).
-Options marked as [!] sign are turned on by default.  To turn them off,
+Options marked with [*] are this wrapper's original features.
+Options marked with [+] are turned on by default.  To turn them off,
 specify -?- for short options and --no-??? for long options, respectively.
 
 Environment variables:
