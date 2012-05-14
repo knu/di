@@ -1,3 +1,17 @@
+== 0.3.0 2012-05-14
+
+* Fix pagerizing with Ruby 1.9+ and turn it on by default.
+
+* Complement a missing implementation of --unidirectional-new-file.
+
+* Complement a missing implementation of -S/--starting-file=FILE.
+
+* Add support for --suppress-blank-empty.
+
+* Fix handling of -T/--initial-tab.
+
+* Remove -L which use has long been deprecated.
+
 == 0.2.3 2012-03-29
 
 * Fix the case where comparing two directories fails when the latter
