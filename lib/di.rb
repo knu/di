@@ -297,11 +297,12 @@ usage: #{MYNAME} [flags] [files]
     opts.on('-N', '--[no-]new-file[=-]', miniTrueClass,
       'Treat absent files as empty. [+]') { |val|
       set_flag('-N', val)
-      $diff.new_file = val
+      $diff.new_file = val ? :bidirectional : val
     }
     opts.on('--unidirectional-new-file[=-]', miniTrueClass,
       'Treat absent first files as empty.') { |val|
       set_flag('--unidirectional-new-file', val)
+      $diff.new_file = val ? :unidirectional : val
     }
     opts.on('-s', '--report-identical-files[=-]', miniTrueClass,
       'Report when two files are the same.') { |val|
@@ -622,15 +623,20 @@ def diff_dirs(dir1, dir2, toplevel_p = false)
   end
 
   if $diff.reversed
-    [[dir1, missing2], [dir2, missing1]]
+    [[dir1, missing2, true], [dir2, missing1, false]]
   else
-    [[dir2, missing1], [dir1, missing2]]
-  end.each { |dir, missing|
+    [[dir2, missing1, true], [dir1, missing2, false]]
+  end.each { |dir, missing, direction|
     new_files = []
+    case $diff.new_file
+    when :bidirectional
+      new_file = true
+    when :unidirectional
+      new_file = direction
+    end
     missing.each { |entry|
       file = File.join(dir, entry)
-
-      if $diff.new_file
+      if new_file
         if File.directory?(file)
           if dir.equal?(dir1)
             diff_dirs(file, nil)
