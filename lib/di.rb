@@ -286,6 +286,10 @@ usage: #{MYNAME} [flags] [files]
       'Tab stops are every NUM (default 8) print columns.') { |val|
       set_flag('--tabsize', val.to_s)
     }
+    opts.on('--suppress-blank-empty[=-]', miniTrueClass,
+      'Suppress space or tab before empty output lines.') { |val|
+      set_flag('--suppress-blank-empty', val)
+    }
     opts.on('-r', '--recursive[=-]', miniTrueClass,
       'Recursively compare any subdirectories found. [!]') { |val|
       set_flag('-r', val)
