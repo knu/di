@@ -326,7 +326,7 @@ usage: #{MYNAME} [flags] [files]
     }
     opts.on('-S FILE', '--starting-file=FILE',
       'Start with FILE when comparing directories.') { |val|
-      set_flag('-S', val)
+      $diff.starting_file = val
     }
     opts.on('--from-file=FILE1',
       'Compare FILE1 to all operands.  FILE1 can be a directory.') { |val|
@@ -531,7 +531,7 @@ def diff_main
             to_file = File.expand_path(from_file, to_file)
           end
 
-          diff_dirs(from_file, to_file)
+          diff_dirs(from_file, to_file, true)
         else
           if $diff.relative
             from_file = File.expand_path(to_file, from_file)
@@ -595,9 +595,9 @@ def call_diff(*args)
   return status
 end
 
-def diff_dirs(dir1, dir2)
-  entries1 = diff_entries(dir1)
-  entries2 = diff_entries(dir2)
+def diff_dirs(dir1, dir2, toplevel_p = false)
+  entries1 = diff_entries(dir1, toplevel_p)
+  entries2 = diff_entries(dir2, toplevel_p)
 
   common = entries1 & entries2
   missing1 = entries2 - entries1
@@ -655,9 +655,14 @@ def diff_dirs(dir1, dir2)
   }
 end
 
-def diff_entries(dir)
+def diff_entries(dir, toplevel_p)
   return [] if dir.nil?
-  return Dir.entries(dir).reject { |file| diff_exclude?(dir, file) }
+  Dir.entries(dir).tap { |entries|
+    entries.reject! { |file| diff_exclude?(dir, file) }
+    if toplevel_p && (starting_file = $diff.starting_file)
+      entries.reject! { |file| file < starting_file }
+    end
+  }
 rescue => e
   warn "#{dir}: #{e}"
   return []
