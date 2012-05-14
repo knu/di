@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = "di"
-  s.version = "0.2.3"
+  s.version = "0.3.0"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Akinori MUSHA"]
-  s.date = "2012-03-29"
+  s.date = "2012-05-14"
   s.description = "The di(1) command wraps around GNU diff(1) to provide reasonable\ndefault settings and some original features.\n"
   s.email = "knu@idaemons.org"
   s.executables = ["di"]
@@ -32,7 +32,7 @@ Gem::Specification.new do |s|
   s.homepage = "https://github.com/knu/di"
   s.require_paths = ["lib"]
   s.required_ruby_version = Gem::Requirement.new(">= 1.8.7")
-  s.rubygems_version = "1.8.15"
+  s.rubygems_version = "1.8.23"
   s.summary = "A wrapper around GNU diff(1)"
 
   if s.respond_to? :specification_version then
