@@ -34,7 +34,6 @@ MYCOPYRIGHT = "Copyright (c) 2008, 2009, 2010, 2011, 2012 Akinori MUSHA"
 
 DIFF_CMD = ENV.fetch('DIFF', 'diff')
 ENV_NAME = "#{MYNAME.tr('-a-z', '_A-Z')}_OPTIONS"
-EMPTYFILE = '/dev/null'
 
 RSYNC_EXCLUDE_FILE_GLOBS = [
   'tags', 'TAGS', 'GTAGS', 'GRTAGS', 'GSYMS', 'GPATH',
@@ -648,9 +647,9 @@ def diff_dirs(dir1, dir2, toplevel_p = false)
       end
     }
     if dir.equal?(dir1)
-      diff_files(new_files, EMPTYFILE)
+      diff_files(new_files, IO::NULL)
     else
-      diff_files(EMPTYFILE, new_files)
+      diff_files(IO::NULL, new_files)
     end
   }
 end
