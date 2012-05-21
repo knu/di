@@ -197,9 +197,9 @@ usage: #{MYNAME} [flags] [files]
       'Output NUM lines of unified context.') { |val|
       set_format_flag('-U', val.to_s)
     }
-    opts.on('--label=LABEL',
+    opts.on('-L LABEL', '--label=LABEL',
       'Use LABEL instead of file name.') { |val|
-      set_flag('--label', val)
+      set_flag('-L', val)
     }
     opts.on('-p', '--show-c-function[=-]', miniTrueClass,
       'Show which C function each change is in. [+]') { |val|
