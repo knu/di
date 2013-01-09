@@ -1,3 +1,7 @@
+== 0.3.2 2013-01-09
+
+* Do not choke on encoding errors when colorizing on Ruby 1.9+.
+
 == 0.3.1 2012-05-21
 
 * Resurrect -L which Subversion still relies on.
