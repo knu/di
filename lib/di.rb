@@ -95,6 +95,8 @@ def setup
     :unchanged	=> "",
     :whitespace	=> "\e[41m",
     :off	=> "\e[m",
+    :open_inv	=> "\e[7m",
+    :close_inv	=> "\e[27m",
   }
   $diff.reversed = false
 end
@@ -705,6 +707,7 @@ def colorize_unified_diff(io)
   state = :comment
   hunk_left = nil
   io.each_line { |line|
+    replace_invalid_bytes!(line)
     case state
     when :comment
       case line
@@ -769,6 +772,7 @@ def colorize_context_diff(io)
   state = :comment
   hunk_part = nil
   io.each_line { |line|
+    replace_invalid_bytes!(line)
     case state
     when :comment
       case line
@@ -842,6 +846,23 @@ def colorize_context_diff(io)
   }
 
   io.close
+end
+
+def replace_invalid_bytes!(text)
+  colors = $diff.colors
+  text.replace(text.replace_invalid_bytes { |byte|
+      '%s<%02X>%s' % [colors[:open_inv], byte, colors[:close_inv]]
+    })
+end
+
+class String
+  def replace_invalid_bytes
+    return self if !defined?(Encoding) || valid_encoding?
+
+    each_char.inject('') { |s, c|
+      s << (c.valid_encoding? ? c : yield(*c.bytes))
+    }
+  end
 end
 
 main(ARGV) if $0 == __FILE__
