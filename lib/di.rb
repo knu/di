@@ -77,28 +77,29 @@ end
 
 def setup
   require 'ostruct'
-  $diff = OpenStruct.new
-  $diff.exclude = []
-  $diff.include = []
-  $diff.flags = []
-  $diff.format_flags = []
-  $diff.format = :normal
-  $diff.colors = {
-    :comment	=> "\e[1m",
-    :file1	=> "\e[1m",
-    :file2	=> "\e[1m",
-    :header	=> "\e[36m",
-    :function	=> "\e[m",
-    :new	=> "\e[32m",
-    :old	=> "\e[31m",
-    :changed	=> "\e[33m",
-    :unchanged	=> "",
-    :whitespace	=> "\e[41m",
-    :off	=> "\e[m",
-    :open_inv	=> "\e[7m",
-    :close_inv	=> "\e[27m",
-  }
-  $diff.reversed = false
+  $diff = OpenStruct.new({
+      :exclude => [],
+      :include => [],
+      :flags => [],
+      :format_flags => [],
+      :format => :normal,
+      :colors => OpenStruct.new({
+          :comment	=> "\e[1m",
+          :file1	=> "\e[1m",
+          :file2	=> "\e[1m",
+          :header	=> "\e[36m",
+          :function	=> "\e[m",
+          :new		=> "\e[32m",
+          :old		=> "\e[31m",
+          :changed	=> "\e[33m",
+          :unchanged	=> "",
+          :whitespace	=> "\e[41m",
+          :off		=> "\e[m",
+          :open_inv	=> "\e[7m",
+          :close_inv	=> "\e[27m",
+        }),
+      :reversed => false,
+    })
 end
 
 def parse_args!(args)
@@ -712,43 +713,43 @@ def colorize_unified_diff(io)
     when :comment
       case line
       when /^\+{3} /
-        color = colors[:file1]
+        color = colors.file1
       when /^-{3} /
-        color = colors[:file2]
+        color = colors.file2
       when /^@@ -[0-9]+(,([0-9]+))? \+[0-9]+(,([0-9]+))?/
         state = :hunk
         hunk_left = ($1 ? $2.to_i : 1) + ($3 ? $4.to_i : 1)
         line.sub!(/^(@@ .*? @@)( )?/) {
-          $1 + ($2 ? colors[:off] + $2 + colors[:function] : '')
+          $1 + ($2 ? colors.off + $2 + colors.function : '')
         }
-        color = colors[:header]
+        color = colors.header
       else
-        color = colors[:comment]
+        color = colors.comment
       end
     when :hunk
       check = false
       case line
       when /^\+/
-        color = colors[:new]
+        color = colors.new
         hunk_left -= 1
         check = $diff.highlight_whitespace
       when /^-/
-        color = colors[:old]
+        color = colors.old
         hunk_left -= 1
         check = $diff.highlight_whitespace
       when /^ /
-        color = colors[:unchanged]
+        color = colors.unchanged
         hunk_left -= 2
       else
         # error
-        color = colors[:comment]
+        color = colors.comment
       end
       if check
         line.sub!(/([ \t]+)$/) {
-          colors[:off] + colors[:whitespace] + $1
+          colors.off + colors.whitespace + $1
         }
         true while line.sub!(/^(.[ \t]*)( +)(\t)/) {
-          $1 + colors[:off] + colors[:whitespace] + $2 + colors[:off] + color + $3
+          $1 + colors.off + colors.whitespace + $2 + colors.off + color + $3
         }
       end
       if hunk_left <= 0
@@ -758,7 +759,7 @@ def colorize_unified_diff(io)
     end
 
     line.sub!(/^/, color)
-    line.sub!(/$/, colors[:off])
+    line.sub!(/$/, colors.off)
 
     print line
   }
@@ -777,16 +778,16 @@ def colorize_context_diff(io)
     when :comment
       case line
       when /^\*{3} /
-        color = colors[:file1]
+        color = colors.file1
       when /^-{3} /
-        color = colors[:file2]
+        color = colors.file2
       when /^\*{15}/
         state = :hunk
         hunk_part = 0
         line.sub!(/^(\*{15})( )?/) {
-          $1 + ($2 ? colors[:off] + $2 + colors[:function] : '')
+          $1 + ($2 ? colors.off + $2 + colors.function : '')
         }
-        color = colors[:header]
+        color = colors.header
       end
     when :hunk
       case hunk_part
@@ -794,10 +795,10 @@ def colorize_context_diff(io)
         case line
         when /^\*{3} /
           hunk_part = 1
-          color = colors[:header]
+          color = colors.header
         else
           # error
-          color = colors[:comment]
+          color = colors.comment
         end
       when 1, 2
         check = false
@@ -805,42 +806,42 @@ def colorize_context_diff(io)
         when /^\-{3} /
           if hunk_part == 1
             hunk_part = 2
-            color = colors[:header]
+            color = colors.header
           else
             #error
-            color = colors[:comment]
+            color = colors.comment
           end
         when /^\*{3} /, /^\*{15} /
           state = :comment
           redo
         when /^\+ /
-          color = colors[:new]
+          color = colors.new
           check = $diff.highlight_whitespace
         when /^- /
-          color = colors[:old]
+          color = colors.old
           check = $diff.highlight_whitespace
         when /^! /
-          color = colors[:changed]
+          color = colors.changed
           check = $diff.highlight_whitespace
         when /^  /
-          color = colors[:unchanged]
+          color = colors.unchanged
         else
           # error
-          color = colors[:comment]
+          color = colors.comment
         end
         if check
           line.sub!(/^(. .*)([ \t]+)$/) {
-            $1 + colors[:off] + colors[:whitespace] + $2
+            $1 + colors.off + colors.whitespace + $2
           }
           true while line.sub!(/^(. [ \t]*)( +)(\t)/) {
-            $1 + colors[:off] + colors[:whitespace] + $2 + colors[:off] + color + $3
+            $1 + colors.off + colors.whitespace + $2 + colors.off + color + $3
           }
         end
       end
     end
 
     line.sub!(/^/, color)
-    line.sub!(/$/, colors[:off])
+    line.sub!(/$/, colors.off)
 
     print line
   }
@@ -851,7 +852,7 @@ end
 def replace_invalid_bytes!(text)
   colors = $diff.colors
   text.replace(text.replace_invalid_bytes { |byte|
-      '%s<%02X>%s' % [colors[:open_inv], byte, colors[:close_inv]]
+      '%s<%02X>%s' % [colors.open_inv, byte, colors.close_inv]
     })
 end
 
