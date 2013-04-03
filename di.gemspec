@@ -25,4 +25,5 @@ EOS
   gem.require_paths = ["lib"]
 
   gem.required_ruby_version = Gem::Requirement.new(">= 1.8.7")
+  gem.add_runtime_dependency("diff-lcs", ["~> 1.2.2"])
 end
