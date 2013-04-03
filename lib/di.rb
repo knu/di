@@ -704,10 +704,12 @@ end
 
 def colorize_unified_diff(io)
   colors = $diff.colors
+  colors.to_function ||= colors.off + colors.function
 
   state = :comment
   hunk_left = nil
   io.each_line { |line|
+    line.chomp!
     replace_invalid_bytes!(line)
     case state
     when :comment
@@ -719,8 +721,8 @@ def colorize_unified_diff(io)
       when /^@@ -[0-9]+(,([0-9]+))? \+[0-9]+(,([0-9]+))?/
         state = :hunk
         hunk_left = ($1 ? $2.to_i : 1) + ($3 ? $4.to_i : 1)
-        line.sub!(/^(@@ .*? @@)( )?/) {
-          $1 + ($2 ? colors.off + $2 + colors.function : '')
+        line.sub!(/^(@@ .*? @@ )/) {
+          $1 + colors.to_function
         }
         color = colors.header
       else
@@ -745,12 +747,7 @@ def colorize_unified_diff(io)
         color = colors.comment
       end
       if check
-        line.sub!(/([ \t]+)$/) {
-          colors.off + colors.whitespace + $1
-        }
-        true while line.sub!(/^(.[ \t]*)( +)(\t)/) {
-          $1 + colors.off + colors.whitespace + $2 + colors.off + color + $3
-        }
+        highlight_whitespace_in_unified_diff!(line, color)
       end
       if hunk_left <= 0
         state = :comment
@@ -758,21 +755,33 @@ def colorize_unified_diff(io)
       end
     end
 
-    line.sub!(/^/, color)
-    line.sub!(/$/, colors.off)
-
-    print line
+    print color, line, colors.off, "\n"
   }
 
   io.close
 end
 
+def highlight_whitespace_in_unified_diff!(line, color)
+  colors = $diff.colors
+  colors.to_whitespace ||= colors.off + colors.whitespace
+
+  line.gsub!(/([ \t]+)$|( +)(?=\t)/) {
+    if $1
+      colors.to_whitespace + $1
+    else
+      colors.to_whitespace + $2 << colors.off << color
+    end
+  }
+end
+
 def colorize_context_diff(io)
   colors = $diff.colors
+  colors.to_function ||= colors.off + colors.function
 
   state = :comment
   hunk_part = nil
   io.each_line { |line|
+    line.chomp!
     replace_invalid_bytes!(line)
     case state
     when :comment
@@ -784,8 +793,8 @@ def colorize_context_diff(io)
       when /^\*{15}/
         state = :hunk
         hunk_part = 0
-        line.sub!(/^(\*{15})( )?/) {
-          $1 + ($2 ? colors.off + $2 + colors.function : '')
+        line.sub!(/^(\*{15} )/) {
+          $1 + colors.to_function
         }
         color = colors.header
       end
@@ -830,23 +839,30 @@ def colorize_context_diff(io)
           color = colors.comment
         end
         if check
-          line.sub!(/^(. .*)([ \t]+)$/) {
-            $1 + colors.off + colors.whitespace + $2
-          }
-          true while line.sub!(/^(. [ \t]*)( +)(\t)/) {
-            $1 + colors.off + colors.whitespace + $2 + colors.off + color + $3
-          }
+          highlight_whitespace_in_context_diff!(line, color)
         end
       end
     end
 
-    line.sub!(/^/, color)
-    line.sub!(/$/, colors.off)
-
-    print line
+    print color, line, colors.off, "\n"
   }
 
   io.close
+end
+
+def highlight_whitespace_in_context_diff!(line, color)
+  colors = $diff.colors
+  colors.to_whitespace ||= colors.off + colors.whitespace
+
+  line.gsub!(/^(..)|([ \t]+)$|( +)(?=\t)/) {
+    if $1
+      $1
+    elsif $2
+      colors.to_whitespace + $2
+    else
+      colors.to_whitespace + $3 << colors.off << color
+    end
+  }
 end
 
 def replace_invalid_bytes!(text)
