@@ -59,6 +59,10 @@ FIGNORE_GLOBS = ENV.fetch('FIGNORE', '').split(':').map { |pat|
 
 IO::NULL = '/dev/null' unless defined? IO::NULL
 
+PLUS_SIGN  = '+'
+MINUS_SIGN = '-'
+EQUAL_SIGN = '='
+
 def main(args)
   setup
 
@@ -91,14 +95,17 @@ def setup
           :function	=> "\e[m",
           :new		=> "\e[32m",
           :old		=> "\e[31m",
+          :new_word	=> "\e[7;32m",
+          :old_word	=> "\e[7;31m",
           :changed	=> "\e[33m",
           :unchanged	=> "",
-          :whitespace	=> "\e[41m",
+          :whitespace	=> "\e[40m",
           :off		=> "\e[m",
           :open_inv	=> "\e[7m",
           :close_inv	=> "\e[27m",
         }),
       :reversed => false,
+      :word_regex => /([@$%]*[[:alnum:]_]+|[^\n])/,
     })
 end
 
@@ -128,7 +135,7 @@ usage: #{MYNAME} [flags] [files]
       $diff.colorize = val if $stdout.tty?
     }
     opts.on('--[no-]highlight-whitespace',
-      'Highlight suspicious whitespace differences in colorized output. [+][*]') { |val|
+      'Highlight whitespace differences in colorized output. [+][*]') { |val|
       $diff.highlight_whitespace = val
     }
     opts.on('--[no-]rsync-exclude', '--[no-]cvs-exclude',
@@ -703,11 +710,19 @@ def diff_exclude?(dir, basename)
 end
 
 def colorize_unified_diff(io)
+  begin
+    require 'diff/lcs'
+    colorize_unified_diff_hunk = method(:colorize_hunk_in_unified_diff_inline)
+  rescue LoadError
+    colorize_unified_diff_hunk = method(:colorize_hunk_in_unified_diff_normal)
+  end
+
   colors = $diff.colors
   colors.to_function ||= colors.off + colors.function
 
   state = :comment
   hunk_left = nil
+  hunk = []
   io.each_line { |line|
     line.chomp!
     replace_invalid_bytes!(line)
@@ -729,36 +744,157 @@ def colorize_unified_diff(io)
         color = colors.comment
       end
     when :hunk
-      check = false
+      hunk << line
       case line
-      when /^\+/
-        color = colors.new
+      when /^[-+]/
         hunk_left -= 1
-        check = $diff.highlight_whitespace
-      when /^-/
-        color = colors.old
-        hunk_left -= 1
-        check = $diff.highlight_whitespace
       when /^ /
-        color = colors.unchanged
         hunk_left -= 2
-      else
-        # error
-        color = colors.comment
-      end
-      if check
-        highlight_whitespace_in_unified_diff!(line, color)
       end
       if hunk_left <= 0
-        state = :comment
+        colorize_unified_diff_hunk.call(hunk)
         hunk_left = nil
+        hunk.clear
+        state = :comment
       end
+      next
     end
 
     print color, line, colors.off, "\n"
   }
 
   io.close
+end
+
+def colorize_hunk_in_unified_diff_normal(hunk)
+  colors = $diff.colors
+
+  hunk.each { |line|
+    case line
+    when /^\+/
+      color = colors.new
+      ws = $diff.highlight_whitespace
+    when /^-/
+      color = colors.old
+      ws = $diff.highlight_whitespace
+    when /^ /
+      color = colors.unchanged
+      ws = false
+    end
+    if ws
+      highlight_whitespace_in_unified_diff!(line, color)
+    end
+    print color, line, colors.off, "\n"
+  }
+end
+
+def colorize_hunk_in_unified_diff_inline(hunk)
+  colors = $diff.colors
+
+  skip_next = false
+
+  Enumerator.new { |y|
+    y << nil
+    hunk.each { |line|
+      y << line
+    }
+    y << nil << nil
+  }.each_cons(4) { |line0, line1, line2, line3|
+    case
+    when skip_next
+      skip_next = false
+      next
+    when line1.nil?
+      break
+    when /^[-+]/ !~ line0 && /^-/ =~ line1 &&  /^\+/ =~ line2 &&  /^[-+]/ !~ line3
+      colorize_inline_diff(line1, line2)
+      skip_next = true
+      next
+    when /^\+/ =~ line1
+      color = colors.new
+      ws = $diff.highlight_whitespace
+    when /^-/ =~ line1
+      color = colors.old
+      ws = $diff.highlight_whitespace
+    when /^ / =~ line1
+      color = colors.unchanged
+      ws = false
+    end
+    if ws
+      line1 = line1.dup
+      highlight_whitespace_in_unified_diff!(line1, color)
+    end
+    print color, line1, colors.off, "\n"
+  }
+end
+
+def colorize_inline_diff(line1, line2)
+  words1, words2 = [line1, line2].map { |line|
+    line[1..-1].split($diff.word_regex)
+  }
+  xwords1, xwords2 = [words1, words2].map { |words|
+    words.each_with_index.map { |word, i| i.even? ? nil : word }
+  }
+  swords1, swords2, signs1, signs2 = [], [], [], []
+
+  Diff::LCS.sdiff(xwords1, xwords2).each { |tuple|
+    sign, (pos1, word1), (pos2, word2) = *tuple
+    case sign
+    when PLUS_SIGN
+      if signs2.last == sign
+        swords2.last << word2 if word2
+      else
+        swords2 << (word2 || '')
+        signs2 << sign
+      end
+    when MINUS_SIGN
+      if signs1.last == sign
+        swords1.last << word1 if word1
+      else
+        swords1 << (word1 || '')
+        signs1 << sign
+      end
+    else
+      if signs1.last == sign
+        swords1.last << words1[pos1]
+      else
+        swords1 << words1[pos1]
+        signs1 << sign
+      end
+      if signs2.last == sign
+        swords2.last << words2[pos2]
+      else
+        swords2 << words2[pos2]
+        signs2 << sign
+      end
+    end
+  }
+
+  colors = $diff.colors
+
+  aline1 = ''.tap { |line|
+    signs1.zip(swords1) { |sign, word|
+      case sign
+      when EQUAL_SIGN
+        line << colors.off << colors.old << word
+      else
+        line << colors.off << colors.old_word << word
+      end
+    }
+  }
+  aline2 = ''.tap { |line|
+    signs2.zip(swords2) { |sign, word|
+      case sign
+      when EQUAL_SIGN
+        line << colors.off << colors.new << word
+      else
+        line << colors.off << colors.new_word << word
+      end
+    }
+  }
+
+  print colors.old, '-', aline1, "\n",
+        colors.new, '+', aline2, "\n"
 end
 
 def highlight_whitespace_in_unified_diff!(line, color)
