@@ -1,5 +1,7 @@
 == 0.4.1 2013-04-11
 
+* Set better labels and disable pager if invoked by git difftool.
+
 * Enhance the --color option like Git.
 
 == 0.4.0 2013-04-04

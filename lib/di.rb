@@ -404,6 +404,13 @@ EOS
                '--pager', '--color=auto', '--highlight-whitespace',
                '-U3', '-N', '-r', '-p', '-d')
 
+    if ENV['GIT_DIFFTOOL_EXTCMD']
+      if base = ENV['BASE']
+        opts.parse('--label', File.join('a', base), '--label', File.join('b', base))
+      end
+      opts.parse('--no-pager')
+    end
+
     if value = ENV[ENV_NAME]
       require 'shellwords'
       opts.parse(*value.shellsplit)
