@@ -130,9 +130,18 @@ usage: #{MYNAME} [flags] [files]
       'Pipe output into pager if stdout is a terminal. [+][*]') { |val|
       $diff.use_pager = val if $stdout.tty?
     }
-    opts.on('--[no-]color',
+    opts.on('--[no-]color[=WHEN]',
       'Colorize output if stdout is a terminal and the format is unified or context. [+][*]') { |val|
-      $diff.colorize = val if $stdout.tty?
+      case val
+      when true, 'always'
+        $diff.colorize = true
+      when 'auto'
+        $diff.colorize = $stdout.tty?
+      when false, 'never'
+        $diff.colorize = false
+      else
+        raise OptionParser::ParseError, "unknown value for --color: #{val}"
+      end
     }
     opts.on('--[no-]highlight-whitespace',
       'Highlight whitespace differences in colorized output. [+][*]') { |val|
@@ -392,7 +401,7 @@ EOS
 
   begin
     opts.parse('--rsync-exclude', '--fignore-exclude', '--ignore-cvs-lines',
-               '--pager', '--color', '--highlight-whitespace',
+               '--pager', '--color=auto', '--highlight-whitespace',
                '-U3', '-N', '-r', '-p', '-d')
 
     if value = ENV[ENV_NAME]

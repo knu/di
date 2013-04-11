@@ -1,3 +1,7 @@
+== 0.4.1 2013-04-11
+
+* Enhance the --color option like Git.
+
 == 0.4.0 2013-04-04
 
 * Add inline word-diff highlighting.
