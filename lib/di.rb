@@ -452,11 +452,7 @@ EOS
   end
 end
 
-def invoke_pager
-  invoke_pager! if $diff.use_pager
-end
-
-def invoke_pager!
+def invoke_filter
   $stdout.flush
   $stderr.flush
   pr, pw = IO.pipe
@@ -466,11 +462,7 @@ def invoke_pager!
     pr.close
     pw.close
     IO.select([$stdin], nil, [$stdin])
-    begin
-      exec(ENV['PAGER'] || 'more')
-    rescue
-      $stderr.puts "Pager failed."
-    end
+    yield
   }
 
   $stdout.reopen(pw)
@@ -482,6 +474,35 @@ def invoke_pager!
     $stdout.reopen(IO::NULL)
     $stderr.reopen(IO::NULL)
     Process.waitpid(pid)
+  }
+end
+
+def invoke_pager
+  invoke_pager! if $diff.use_pager
+end
+
+def invoke_pager!
+  invoke_filter {
+    begin
+      exec(ENV['PAGER'] || 'more')
+    rescue
+      $stderr.puts "Pager failed."
+    end
+  }
+end
+
+def invoke_colorizer
+  invoke_colorizer! if $diff.colorize
+end
+
+def invoke_colorizer!
+  invoke_filter {
+    case $diff.format
+    when :unified
+      colorize_unified_diff
+    when :context
+      colorize_context_diff
+    end
   }
 end
 
@@ -585,21 +606,8 @@ def diff_files(file1, file2)
 end
 
 def call_diff(*args)
-  command_args = [DIFF_CMD, $diff.flags, args].flatten
-  if $diff.colorize
-    case $diff.format
-    when :unified
-      filter = method(:colorize_unified_diff)
-    when :context
-      filter = method(:colorize_context_diff)
-    end
-  end
-  if filter
-    require 'shellwords'
-    filter.call(IO.popen(command_args.shelljoin, 'r'))
-  else
-    system(*command_args)
-  end
+  invoke_colorizer
+  system *[DIFF_CMD, $diff.flags, args].flatten
   status = $? >> 8
   $status = status if $status < status
   return status
@@ -709,7 +717,7 @@ def diff_exclude?(dir, basename)
   return false
 end
 
-def colorize_unified_diff(io)
+def colorize_unified_diff
   begin
     require 'diff/lcs'
     colorize_unified_diff_hunk = method(:colorize_hunk_in_unified_diff_inline)
@@ -723,7 +731,7 @@ def colorize_unified_diff(io)
   state = :comment
   hunk_left = nil
   hunk = []
-  io.each_line { |line|
+  $stdin.each_line { |line|
     line.chomp!
     replace_invalid_bytes!(line)
     case state
@@ -762,8 +770,6 @@ def colorize_unified_diff(io)
 
     print color, line, colors.off, "\n"
   }
-
-  io.close
 end
 
 def colorize_hunk_in_unified_diff_normal(hunk)
@@ -910,13 +916,13 @@ def highlight_whitespace_in_unified_diff!(line, color)
   }
 end
 
-def colorize_context_diff(io)
+def colorize_context_diff
   colors = $diff.colors
   colors.to_function ||= colors.off + colors.function
 
   state = :comment
   hunk_part = nil
-  io.each_line { |line|
+  $stdin.each_line { |line|
     line.chomp!
     replace_invalid_bytes!(line)
     case state
@@ -982,8 +988,6 @@ def colorize_context_diff(io)
 
     print color, line, colors.off, "\n"
   }
-
-  io.close
 end
 
 def highlight_whitespace_in_context_diff!(line, color)
