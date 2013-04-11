@@ -1,3 +1,9 @@
+== 0.4.0 2013-04-04
+
+* Add inline word-diff highlighting.
+
+* Improve suspicious whitespace highlighting.
+
 == 0.3.2 2013-01-09
 
 * Do not choke on encoding errors when colorizing on Ruby 1.9+.
