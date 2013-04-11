@@ -893,8 +893,8 @@ def colorize_inline_diff(line1, line2)
     }
   }
 
-  print colors.old, '-', aline1, "\n",
-        colors.new, '+', aline2, "\n"
+  print colors.old, '-', aline1, colors.off, "\n",
+        colors.new, '+', aline2, colors.off, "\n"
 end
 
 def highlight_whitespace_in_unified_diff!(line, color)
