@@ -14,6 +14,7 @@ default settings and some original features.
 EOS
   gem.summary       = %q{A wrapper around GNU diff(1)}
   gem.homepage      = "https://github.com/knu/di"
+  gem.license       = "2-clause BSDL"
 
   gem.files         = `git ls-files`.split($/)
   gem.executables   = gem.files.grep(%r{^bin/}).map{ |f| File.basename(f) }
