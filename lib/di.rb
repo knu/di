@@ -79,6 +79,11 @@ def warn(*lines)
   }
 end
 
+def xsystem(*args)
+  args << { :close_others => false } unless RUBY_VERSION < '1.9'
+  system(*args)
+end
+
 def setup
   require 'ostruct'
   $diff = OpenStruct.new({
@@ -375,7 +380,7 @@ usage: #{MYNAME} [flags] [files]
 
 ----
   EOF
-      system(DIFF_CMD, '--version')
+      xsystem(DIFF_CMD, '--version')
       exit
     }
     opts.on('--help',
@@ -623,7 +628,7 @@ end
 
 def call_diff(*args)
   invoke_colorizer
-  system *[DIFF_CMD, $diff.flags, args].flatten
+  xsystem *[DIFF_CMD, $diff.flags, args].flatten
   status = $? >> 8
   $status = status if $status < status
   return status
