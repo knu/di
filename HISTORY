@@ -1,3 +1,8 @@
+== 0.4.2 2013-08-16
+
+* Do not close inherited file descriptors on invoking diff(1) so that
+  `di file <(command)` works.
+
 == 0.4.1 2013-04-11
 
 * Set better labels and disable pager if invoked by git difftool.
