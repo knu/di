@@ -114,6 +114,10 @@ def setup
     })
 end
 
+def tty_color?
+  $stdout.tty? && `tput colors`.to_i >= 8
+end
+
 def tty_dumb?
   !$stdout.tty? || ENV['TERM'] == 'dumb'
 end
@@ -145,7 +149,7 @@ usage: #{MYNAME} [flags] [files]
       when true, 'always'
         $diff.colorize = true
       when 'auto'
-        $diff.colorize = $stdout.tty?
+        $diff.colorize = tty_color?
       when false, 'never'
         $diff.colorize = false
       else
