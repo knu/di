@@ -114,6 +114,10 @@ def setup
     })
 end
 
+def tty_dumb?
+  !$stdout.tty? || ENV['TERM'] == 'dumb'
+end
+
 def parse_args!(args)
   require 'optparse'
 
@@ -133,7 +137,7 @@ usage: #{MYNAME} [flags] [files]
 
     opts.on('--[no-]pager',
       'Pipe output into pager if stdout is a terminal. [+][*]') { |val|
-      $diff.use_pager = val if $stdout.tty?
+      $diff.use_pager = val unless val && tty_dumb?
     }
     opts.on('--[no-]color[=WHEN]',
       'Colorize output if stdout is a terminal and the format is unified or context. [+][*]') { |val|
