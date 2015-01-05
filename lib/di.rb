@@ -3,7 +3,7 @@
 #
 # di - a wrapper around GNU diff(1)
 #
-# Copyright (c) 2008, 2009, 2010, 2011, 2012, 2013 Akinori MUSHA
+# Copyright (c) 2008-2015 Akinori MUSHA
 #
 # All rights reserved.
 #
@@ -28,9 +28,9 @@
 # OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 # SUCH DAMAGE.
 
-MYVERSION = "0.4.2"
+MYVERSION = "0.4.3"
 MYNAME = File.basename($0)
-MYCOPYRIGHT = "Copyright (c) 2008, 2009, 2010, 2011, 2012, 2013 Akinori MUSHA"
+MYCOPYRIGHT = "Copyright (c) 2008-2015 Akinori MUSHA"
 
 DIFF_CMD = ENV.fetch('DIFF', 'diff')
 ENV_NAME = "#{MYNAME.tr('-a-z', '_A-Z')}_OPTIONS"

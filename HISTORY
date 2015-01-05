@@ -1,3 +1,9 @@
+== 0.4.3 2015-01-05
+
+* Do not use colors if the terminal does not support colors.
+
+* Do not invoke a pager when on a dumb terminal.
+
 == 0.4.2 2013-08-16
 
 * Do not close inherited file descriptors on invoking diff(1) so that
