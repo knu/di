@@ -431,8 +431,9 @@ EOS
 
     opts.parse!(args)
 
+    # -U3 must come before -p, otherwise you get "error: conflicting output format options."
     $diff.format_flags.each { |format_flag|
-      set_flag(*format_flag)
+      prepend_flag(*format_flag)
     }
 
     if $diff.ignore_cvs_lines
@@ -533,6 +534,16 @@ def invoke_colorizer!
       colorize_context_diff
     end
   }
+end
+
+def prepend_flag(flag, val)
+  case val
+  when true, false
+    $diff.flags.reject! { |f,| f == flag }
+    $diff.flags.unshift [flag] if val
+  else
+    $diff.flags.unshift [flag, val]
+  end
 end
 
 def set_flag(flag, val)
