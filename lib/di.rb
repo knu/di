@@ -165,7 +165,7 @@ usage: #{MYNAME} [flags] [files]
       $diff.rsync_exclude = val
     }
     opts.on('--[no-]ignore-cvs-lines',
-      'Ignore CVS/RCS keyword lines. [+][*]') { |val|
+      'Ignore CVS/RCS keyword lines. [*]') { |val|
       $diff.ignore_cvs_lines = val
     }
     opts.on('--[no-]fignore-exclude',
@@ -413,7 +413,7 @@ EOS
   }
 
   begin
-    opts.parse('--rsync-exclude', '--fignore-exclude', '--ignore-cvs-lines',
+    opts.parse('--rsync-exclude', '--fignore-exclude',
                '--pager', '--color=auto', '--highlight-whitespace',
                '-U3', '-N', '-r', '-p', '-d')
 
