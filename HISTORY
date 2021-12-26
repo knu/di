@@ -1,3 +1,8 @@
+== 0.4.5 2021-12-26
+
+* Drop --ignore-cvs-lines as a default option.
+  It now causes the "Regular expression too big" error on macOS Monterey.
+
 == 0.4.4 2021-04-06
 
 * Fix a fatal conflict when -p is specified.
